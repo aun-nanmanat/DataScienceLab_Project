@@ -1,0 +1,4838 @@
+---
+title: "Explore Predictive Models - Data Science Lab Project"
+subtitle: "Authors: Leona Hasani, Leona Hoxha, Nanmanat Disayakamonpan, Nastaran Mesgari"
+format: html
+abstract: "In this project we would want to put more focus/effort into the interpretability of machine learning models, which models to choose for a particular dataset (the same models will be applied to all of the datasets since they're all have a binary target variable, and does it mean that for example Random Forest will be performing the best at one dataset or to all of them and what are the reasons behind), how we could better interpret the accuracy scores of complex models and does it mean that the more complex a model is, the more accurate it will be in predicting, or is the other way around. We would like to explore that how the PCA can affect the prediction modelling, specifically the differences between with/without applying PCA for each of the datasets. We would like to explore and be able to choose the bias and variance of a model (bias and variance trade-off). We want to explore the trade-off dynamics of choosing between the inclusion of all of the available features and applying feature selection techniques to the datasets."
+---
+
+
+# Table of contents:
+
+## 1. Introduction
+    
+## 2. Background of the Data
+
+## 3. Data Preprocessing
+
+## 4. Exploratory Data Analysis
+
+### 4.1. Health Sector: Cardiovascular Dataset
+### 4.2. Business Sector: Hotel Reservation Dataset 
+### 4.3. Environment Sector: Weather in Australia Dataset 
+	
+## 5. Modelling
+
+### 5.1. Logistic Regression
+### 5.2. Decision Tree Classifier
+### 5.3. Random Forest Classifier
+### 5.4. Gradient Boosting Classifier
+### 5.5. K-Nearest Neighbor Classifier
+### 5.6. AdaBoost Classifier
+                       
+## 6. Results
+
+## 7. Conclusion
+
+
+```{python echo=FALSE}
+#| label: packages-data
+
+#Importing the needed libraries only in this code chunk
+
+import pandas as pd
+import numpy as np
+import seaborn as sns
+import matplotlib.pyplot as plt
+import plotly.express as px
+import plotly.graph_objects as go
+from plotly.subplots import make_subplots
+import warnings
+warnings.filterwarnings('ignore')
+import time
+import math
+
+
+from sklearn.preprocessing import StandardScaler, LabelEncoder
+from sklearn.decomposition import PCA
+from sklearn.model_selection import train_test_split, cross_val_score
+from sklearn.linear_model import LogisticRegression
+from sklearn.metrics import roc_auc_score
+from sklearn.metrics import roc_curve
+from sklearn.metrics import confusion_matrix
+from sklearn.linear_model import LogisticRegression
+from sklearn.metrics import accuracy_score, classification_report
+from sklearn.model_selection import train_test_split
+from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score, roc_auc_score, classification_report
+from sklearn.ensemble import RandomForestClassifier, AdaBoostClassifier, GradientBoostingClassifier
+from sklearn.neighbors import KNeighborsClassifier
+from sklearn.tree import DecisionTreeClassifier
+from sklearn.feature_selection import SelectKBest, f_classif
+from sklearn.utils import resample
+from sklearn import metrics
+from itertools import cycle
+```
+
+# Importing the datasets 
+
+```{python, message=FALSE}
+#| label: Loading the data
+
+weather = pd.read_csv('Datasets/weatherAUS.csv', sep=",", header=0, index_col=False)
+
+cardio = pd.read_csv('Datasets/CVD_cleaned.csv', sep=",", header=0, index_col=False)
+
+hotel = pd.read_csv('Datasets/Hotel Reservations.csv', sep=",", header=0, index_col=False)
+
+```
+
+
+# Environment Sector: Weather in Australia Dataset 
+
+## Information on the features of the dataset
+
+The variables that we are most interested in this dataset are as below:
+
+| Column Name | Meaning 
+|---|---|
+| **Date** | The date of the observation |
+| **Location** | he common name of the location of the weather station |
+| **MinTemp** | The minimum temperature in degrees celsius | 
+| **MaxTemp** | The maximum temperature in degrees celsius | 
+| **Rainfall** | The amount of rainfall recorded for the day in mm | 
+| **Evaporation** | The so-called Class A pan evaporation (mm) in the 24 hours to 9am | 
+| **Sunshine**| The number of hours of bright sunshine in the day | 
+| **WindGustDir** | The direction of the strongest wind gust in the 24 hours to midnight | 
+| **WindGustSpeed** | The speed (km/h) of the strongest wind gust in the 24 hours to midnight |
+| **WindDir9am** | Direction of the wind at 9am |
+| **WindDir3pm** | Direction of the wind at 3pm| 
+| **WindSpeed9am** | Speed of the wind 10 min prior to 9am (km/h) | 
+| **WindSpeed3pm** | Speed of the wind 10 min prior to 3pm (km/h) | 
+| **Humidity9am** | Humidity of the wind at 9am  | 
+| **Humidity3pm**| Humidity of the wind at 3pm  | 
+| **Pressure9am** | Atmospheric pressure at 9am | 
+| **Pressure3pm** | Atmospheric pressure at 3pm |
+| **Cloud9am** | cloud-obscured portions of the sky at 9am (eighths) |
+| **Cloud3pm** | cloud-obscured portions of the sky at 3pm (eighths)| 
+| **Temp9am** | Temperature at 9am (degree Celsius)| 
+| **Temp3pm** | Temperature at 3pm (degree Celsius) | 
+| **RainToday** | If today is rainy then ‘Yes’, if not then ‘No’ | 
+| **RainTomorrow**| Target Variable: If tomorrow is rainy then ‘Yes’, if not then ‘No’ | 
+
+
+## Preprocessing steps in Weather in Australia Dataset
+
+```{python}
+weather.head(5)
+```
+
+```{python}
+weather.nunique()
+```
+
+```{python}
+weather.info()
+```
+
+```{python}
+weather.describe()
+```
+
+We can observe that the type of some of the variables is 'object' and thereby we need to change their type into numerical. But, first we need to check if there are any missing values in those columns and decide if whether they contain important information or play a significant role in the determining whether is going to rain or not.
+
+Here, we check if the dataset contains any duplicates observations.
+
+```{python}
+#| label: weather data cleaning
+
+weather.duplicated().sum()
+weather.drop_duplicates()
+weather.nunique()
+```
+
+We can see that there are not duplicates in this dataset.
+
+### Missing values in the dataset
+
+```{python}
+weather.isna().sum()
+```
+
+### Heatmap of the missing values
+
+```{python}
+plt.figure(figsize=(10, 6))
+sns.heatmap(weather.isnull(), cmap='viridis', yticklabels=False, cbar=False)
+plt.title('Missing Values in the Weather Dataset')
+plt.show()
+```
+
+From the heatmap we can see that the features of the dataset which have more than 50 percent of the total observations as null values are ***Evaporation, Sunshine, Cloud9am and Cloud3pm*** and we decide to remove them from the dataset, since we believe that these variables are not key factors in determining whether it is going to rain tomorrow or not. Moreover, since in this project the focus is not in the implementing different imputation techniques in order to see how well they would perform in different machine learning algorithms, we decide to get rid of them.
+
+```{python}
+columns_to_remove = ['Evaporation', 'Sunshine', 'Cloud9am', 'Cloud3pm']  
+
+# Remove the specified columns from the DataFrame
+weather.drop(columns=columns_to_remove, inplace=True)
+
+```
+
+```{python}
+weather.isna().sum()
+```
+
+```{python}
+weather.head(5)
+
+weather.dropna(axis=0, inplace=True)
+```
+
+After removing the above mentioned variables, we still have other features of the dataset that have more than 15K missing values. Since, this is almost 10% of the total observations, we decide to remove these observations, which we believe that we would not have a significant drop in the performance metrics' of the machine learning algorithms.
+
+```{python}
+weather.info()
+```
+
+Now, we check to see that with how many observations we are left, and we can see that this dataset now after the preprocessing steps it has 112925 rows.
+
+### Checking if the dataset is imbalanced
+
+Now, we want to see whether the target variable which is ***RainTomorrow*** with value 1 when it will rain, and 0 when it won't rain. We want to see whether there is an imbalance between the two classes.
+
+```{python}
+
+# Calculate class distribution
+class_distribution = weather['RainTomorrow'].value_counts()
+
+# Calculate class proportions
+class_proportions = weather['RainTomorrow'].value_counts(normalize=True) * 100
+
+# Create a bar plot
+fig = go.Figure([go.Bar(x=class_distribution.index, y=class_distribution.values, 
+                         text=class_proportions.round(2), textposition='auto',
+                         marker_color=['blue', 'orange'])])
+
+# Update layout
+fig.update_layout(title='Class Distribution of RainTomorrow',
+                  xaxis=dict(title='RainTomorrow Class', tickvals=[0, 1], ticktext=['0', '1']),
+                  yaxis=dict(title=''))
+
+# Show plot
+fig.show()
+
+```
+
+By the plot we can see that the class 0 has 77.84% of the total observations in the dataset and class 1 holds 22.16% of the total observations. 
+
+From this we can say that the dataset is not imbalanced. From the different websites we have seen that there is not an exact value when a dataset is imbalanced, but in most of the cases, they say a dataset is imbalanced when for the target variable one class holds less than 10% of the total observations.
+
+### TODO: 
+*Look more into the academic papers for a specific value when a dataset is considered imbalanced.*
+
+### Correlation Heatmap for the Hotel Dataset - numerical features
+
+Now we want to see the relationships between each of the numerical variables.
+
+```{python}
+#| label: Correlation heatmap for the hotel dataset 
+
+correlation = weather.corr().round(2) #rounding it into 2 decimals 
+
+# Plotting with the Plotly library
+fig = px.imshow(correlation, x=correlation.index, y=correlation.columns, color_continuous_scale='YlOrBr', labels={'color': 'Correlation'})
+fig.update_layout(title='Correlation Heatmap for the Hotel Dataset', width=600, height=550)
+fig.show()
+```
+
+We can see that some of the variables are highly correlated with each other. For instance, the minimal temperature and the maximal temperature within a day are highly correlated with each other, which is very easy to understand. Then, we can see that the maximum temperature and the temperature at 3 PM are very highly correlate, with a value of 0.98, which is very true since the peak temperatures during the day are around 3 PM. Then we can see that some of the variables are negatively correlated with each other, for example, temperature at 3PM and also Humidity 3PM, which it means that if the temperature are high during 3PM than the humidity values during this time would be low, and vice versa, if the temperature is low during that time of the day than the humidity would be high.
+
+```{python}
+weather.info()
+```
+
+
+```{python}
+#| label: Label Encoding for the categorical variable
+
+#columns_to_encode2 = ['WindGustDir', 'WindDir9am', 'WindDir3pm', 'RainToday', 'RainTomorrow']
+
+#label_encoders = {}
+#for column in columns_to_encode2:
+#    label_encoders[column] = LabelEncoder()
+#    weather[column] = label_encoders[column].fit_transform(weather[column])
+
+```
+
+```{python}
+weather.head(5)
+```
+
+### Boxplot of the numerical features for the Hotel Dataset
+
+In order to see the outliers of specific numerical features, we need to plot them beforehand.
+
+```{python}
+#| label: Visualizing the boxplots for the numerical variables of the weather's dataset 
+
+numerical_columns2 = weather.select_dtypes(include=['int64', 'float64']).columns
+num_plots_per_row = 3
+num_rows = -(-len(numerical_columns2) // num_plots_per_row)  
+
+plt.figure(figsize=(20, 4 * num_rows))
+
+for i, column in enumerate(numerical_columns2, start=1):
+    plt.subplot(num_rows, num_plots_per_row, i)
+    sns.boxplot(x=weather[column], palette='Set3')
+    plt.title(f"Boxplot for {column}")
+
+plt.tight_layout()
+plt.show()
+```
+
+We can clearly see that most of the variables do not have outliers, but for instance the variable *WindSpeed3pm* has an outlier of more than 80 km/h, which this could be a true value in the dataset (not from the errors of input), so we decide not to remove the outliers in some of the variables, since they seem to be true values. For example, very high temperatures could occur in the deserts, strong wind gust could occur in locations near the ocean.
+
+### Histogram for the numerical features for the Weather Dataset
+
+In order to see the skewness of the numerical features we need to plot histograms for each of the variables, if we see that in particular one of the variables are skewed that we can use the logarithmic properties in order to make that particular feature normally distributed.
+
+```{python}
+plt.figure(figsize=(20, 4 * num_rows))
+
+for i, column in enumerate(numerical_columns2, start=1):
+    plt.subplot(num_rows, num_plots_per_row, i)
+    sns.histplot(x=weather[column], palette='Set3')
+    plt.title(f"Boxplot for {column}")
+
+plt.tight_layout()
+plt.show()
+```
+
+From the histogram we can observe that the numerical variables of the dataset are not skewed negatively/positevely but they somehow have a normal distribution.
+
+So, we do not use any transformation in this dataset (i.e log-transformation).
+
+### Label Encoding for the Categorical Variables 
+
+Before continuing into the modelling part, we should encode the categorical variables of the dataset.
+
+```{python}
+
+categorical_weather = ['Location', 'WindGustDir', 'WindDir9am', 'WindDir3pm', 'RainToday', 'RainTomorrow']
+
+# Initialize LabelEncoder
+label_encoder = LabelEncoder()
+
+# Iterate through each categorical column and encode its values
+for column in categorical_weather:
+    weather[column] = label_encoder.fit_transform(weather[column])
+
+weather
+```
+
+Then, we will remove the variable **Date**.
+
+```{python}
+column_to_remove = ['Date']  
+
+# Remove the specified columns from the DataFrame
+weather.drop(columns=column_to_remove, inplace=True)
+```
+
+## Modelling part
+
+### Splitting the dataset into training and testing sets
+
+```{python}
+
+X = weather.drop(columns = ['RainTomorrow'])
+y = weather['RainTomorrow']
+
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+
+# Initialize the StandardScaler
+scaler = StandardScaler()
+
+# Fit and transform the training and testing data separately
+X_train_scaled = scaler.fit_transform(X_train)
+X_test_scaled = scaler.fit_transform(X_test)
+
+# Convert scaled data back to DataFrames
+X_train_scaled_weather = pd.DataFrame(X_train_scaled, columns=X.columns)
+X_test_scaled_weather = pd.DataFrame(X_test_scaled, columns=X.columns)
+```
+
+### Select KBest Features of the datasets
+
+```{python}
+
+target_variable = 'RainTomorrow'
+k=10
+X_feature_weather = weather.drop(columns=[target_variable])
+y_feature_weather = weather[target_variable]
+selector = SelectKBest(score_func=f_classif, k=k)
+X_selected = selector.fit_transform(X_feature_weather, y_feature_weather)
+selected_feature_indices = selector.get_support(indices=True)
+selected_feature_names = X_feature_weather.columns[selected_feature_indices].tolist()
+print("Selected Features using SelectKBest:")
+print(selected_feature_names)
+
+
+X_train_featureselection_weather = X_train.drop(columns = ['Location', 'MinTemp', 'WindGustDir', 'WindDir9am', 'WindDir3pm', 'WindSpeed9am', 'Temp9am'])
+X_test_featureselection_weather = X_test.drop(columns = ['Location', 'MinTemp', 'WindGustDir', 'WindDir9am', 'WindDir3pm', 'WindSpeed9am', 'Temp9am'])
+
+X_train_featureselection_scaled_weather = X_train_scaled_weather.drop(columns = ['Location', 'MinTemp', 'WindGustDir', 'WindDir9am', 'WindDir3pm', 'WindSpeed9am', 'Temp9am'])
+X_test_featureselection_scaled_weather = X_test_scaled_weather.drop(columns = ['Location', 'MinTemp', 'WindGustDir', 'WindDir9am', 'WindDir3pm', 'WindSpeed9am', 'Temp9am'])
+
+```
+
+
+### Logistic Regression 
+
+```{python}
+
+start_time = time.time()
+
+log_model = LogisticRegression()
+
+log_model.fit(X_train, y_train)
+
+# Make predictions on the test data
+y_pred = log_model.predict(X_test)
+
+# Calculate performance metrics
+accuracy = accuracy_score(y_test, y_pred)
+precision = precision_score(y_test, y_pred)
+recall = recall_score(y_test, y_pred)
+f1 = f1_score(y_test, y_pred)
+auc = roc_auc_score(y_test, y_pred)
+
+end_time = time.time()
+computational_time = end_time - start_time
+
+# Creatin a performance scores dataframe
+results_weather = pd.DataFrame(columns=['Model', 'Accuracy', 'Precision', 'Recall', 'F1-score', 'ROC AUC Score', 'Computational Time'])
+
+# Append the metrics to the DataFrame
+results_weather = results_weather.append({
+    'Model': 'Logistic Regression Classifier',
+    'Accuracy': accuracy,
+    'Precision': precision,
+    'Recall': recall,
+    'F1-score': f1,
+    'ROC AUC Score': auc,
+    'Computational Time': computational_time
+}, ignore_index=True)
+
+
+results_weather
+
+```
+
+### Logistic Regression with scaled data
+
+```{python}
+start_time = time.time()
+
+log_model.fit(X_train_scaled_weather, y_train)
+
+# Make predictions on the test data
+y_pred = log_model.predict(X_test_scaled_weather)
+
+# Calculate performance metrics
+accuracy = accuracy_score(y_test, y_pred)
+precision = precision_score(y_test, y_pred)
+recall = recall_score(y_test, y_pred)
+f1 = f1_score(y_test, y_pred)
+auc = roc_auc_score(y_test, y_pred)
+
+end_time = time.time()
+computational_time = end_time - start_time
+
+# Append the metrics to the DataFrame
+results_weather = results_weather.append({
+    'Model': 'Logistic Regression Classifier Scaled',
+    'Accuracy': accuracy,
+    'Precision': precision,
+    'Recall': recall,
+    'F1-score': f1,
+    'ROC AUC Score': auc,
+    'Computational Time': computational_time
+}, ignore_index=True)
+
+results_weather
+```
+
+### Logistic Regression with Feature Selection
+
+```{python}
+start_time = time.time()
+
+log_model.fit(X_train_featureselection_weather, y_train)
+
+# Make predictions on the test data
+y_pred = log_model.predict(X_test_featureselection_weather)
+
+# Calculate performance metrics
+accuracy = accuracy_score(y_test, y_pred)
+precision = precision_score(y_test, y_pred)
+recall = recall_score(y_test, y_pred)
+f1 = f1_score(y_test, y_pred)
+auc = roc_auc_score(y_test, y_pred)
+
+end_time = time.time()
+computational_time = end_time - start_time
+
+# Append the metrics to the DataFrame
+results_weather = results_weather.append({
+    'Model': 'Logistic Regression Classifier with Feature Selection',
+    'Accuracy': accuracy,
+    'Precision': precision,
+    'Recall': recall,
+    'F1-score': f1,
+    'ROC AUC Score': auc,
+    'Computational Time': computational_time
+}, ignore_index=True)
+
+results_weather
+```
+
+### Logistic Regression with Feature Selection Scaled
+
+```{python}
+start_time = time.time()
+
+log_model.fit(X_train_featureselection_scaled_weather, y_train)
+
+# Make predictions on the test data
+y_pred = log_model.predict(X_test_featureselection_scaled_weather)
+
+# Calculate performance metrics
+accuracy = accuracy_score(y_test, y_pred)
+precision = precision_score(y_test, y_pred)
+recall = recall_score(y_test, y_pred)
+f1 = f1_score(y_test, y_pred)
+auc = roc_auc_score(y_test, y_pred)
+
+end_time = time.time()
+computational_time = end_time - start_time
+
+# Append the metrics to the DataFrame
+results_weather = results_weather.append({
+    'Model': 'Logistic Regression Classifier with Feature Selection Scaled',
+    'Accuracy': accuracy,
+    'Precision': precision,
+    'Recall': recall,
+    'F1-score': f1,
+    'ROC AUC Score': auc,
+    'Computational Time': computational_time
+}, ignore_index=True)
+
+results_weather
+```
+
+### Decision Tree Classifier
+
+```{python}
+
+start_time = time.time()
+
+# Create a Decision Tree Classifier
+dt_clf = DecisionTreeClassifier()
+
+# Fit the model to the training data
+dt_clf.fit(X_train, y_train)
+
+# Make predictions on the test data
+y_pred = dt_clf.predict(X_test)
+
+# Calculate performance metrics
+accuracy = accuracy_score(y_test, y_pred)
+precision = precision_score(y_test, y_pred)
+recall = recall_score(y_test, y_pred)
+f1 = f1_score(y_test, y_pred)
+auc = roc_auc_score(y_test, y_pred)
+
+end_time = time.time()
+computational_time = end_time - start_time
+
+# Append the metrics to the DataFrame
+results_weather = results_weather.append({
+    'Model': 'Decision Tree Classifier',
+    'Accuracy': accuracy,
+    'Precision': precision,
+    'Recall': recall,
+    'F1-score': f1,
+    'ROC AUC Score': auc,
+    'Computational Time': computational_time
+}, ignore_index=True)
+
+results_weather
+
+```
+
+### Decision Tree Classifier with the scaled data
+
+```{python}
+start_time = time.time()
+
+# Fit the model to the training data
+dt_clf.fit(X_train_scaled_weather, y_train)
+
+# Make predictions on the test data
+y_pred = dt_clf.predict(X_test_scaled_weather)
+
+# Calculate performance metrics
+accuracy = accuracy_score(y_test, y_pred)
+precision = precision_score(y_test, y_pred)
+recall = recall_score(y_test, y_pred)
+f1 = f1_score(y_test, y_pred)
+auc = roc_auc_score(y_test, y_pred)
+
+end_time = time.time()
+computational_time = end_time - start_time 
+
+# Append the metrics to the DataFrame
+results_weather = results_weather.append({
+    'Model': 'Decision Tree Classifier Scaled',
+    'Accuracy': accuracy,
+    'Precision': precision,
+    'Recall': recall,
+    'F1-score': f1,
+    'ROC AUC Score': auc,
+    'Computational Time': computational_time
+}, ignore_index=True)
+
+results_weather
+```
+
+### Decision Tree Classifier with feature selection
+
+```{python}
+start_time = time.time()
+
+# Fit the model to the training data
+dt_clf.fit(X_train_featureselection_weather, y_train)
+
+# Make predictions on the test data
+y_pred = dt_clf.predict(X_test_featureselection_weather)
+
+# Calculate performance metrics
+accuracy = accuracy_score(y_test, y_pred)
+precision = precision_score(y_test, y_pred)
+recall = recall_score(y_test, y_pred)
+f1 = f1_score(y_test, y_pred)
+auc = roc_auc_score(y_test, y_pred)
+
+end_time = time.time()
+computational_time = end_time - start_time 
+
+# Append the metrics to the DataFrame
+results_weather = results_weather.append({
+    'Model': 'Decision Tree Classifier with Feature Selection',
+    'Accuracy': accuracy,
+    'Precision': precision,
+    'Recall': recall,
+    'F1-score': f1,
+    'ROC AUC Score': auc,
+    'Computational Time': computational_time
+}, ignore_index=True)
+
+results_weather
+```
+
+### Decision Tree Classifier with the scaled data
+
+```{python}
+start_time = time.time()
+
+# Fit the model to the training data
+dt_clf.fit(X_train_featureselection_scaled_weather, y_train)
+
+# Make predictions on the test data
+y_pred = dt_clf.predict(X_test_featureselection_scaled_weather)
+
+# Calculate performance metrics
+accuracy = accuracy_score(y_test, y_pred)
+precision = precision_score(y_test, y_pred)
+recall = recall_score(y_test, y_pred)
+f1 = f1_score(y_test, y_pred)
+auc = roc_auc_score(y_test, y_pred)
+
+end_time = time.time()
+computational_time = end_time - start_time 
+
+# Append the metrics to the DataFrame
+results_weather = results_weather.append({
+    'Model': 'Decision Tree Classifier with Feature Selection Scaled',
+    'Accuracy': accuracy,
+    'Precision': precision,
+    'Recall': recall,
+    'F1-score': f1,
+    'ROC AUC Score': auc,
+    'Computational Time': computational_time
+}, ignore_index=True)
+
+results_weather
+```
+
+### Random Forest Classifier 
+
+```{python}
+
+start_time = time.time()
+
+model_rf = RandomForestClassifier()
+model_rf.fit(X_train, y_train)
+
+# Make predictions on the test data
+y_pred = model_rf.predict(X_test)
+
+# Calculate performance metrics
+accuracy = accuracy_score(y_test, y_pred)
+precision = precision_score(y_test, y_pred)
+recall = recall_score(y_test, y_pred)
+f1 = f1_score(y_test, y_pred)
+auc = roc_auc_score(y_test, y_pred)
+
+end_time = time.time()
+computational_time = end_time - start_time
+
+# Append the metrics to the DataFrame
+results_weather = results_weather.append({
+    'Model': 'Random Forest Classifier',
+    'Accuracy': accuracy,
+    'Precision': precision,
+    'Recall': recall,
+    'F1-score': f1,
+    'ROC AUC Score': auc,
+    'Computational Time': computational_time
+}, ignore_index=True)
+
+results_weather
+```
+
+### Random Forest Classifier with scaled data
+
+```{python}
+start_time = time.time()
+
+# Fit the model to the training data
+model_rf.fit(X_train_scaled_weather, y_train)
+
+# Make predictions on the test data
+y_pred = model_rf.predict(X_test_scaled_weather)
+
+# Calculate performance metrics
+accuracy = accuracy_score(y_test, y_pred)
+precision = precision_score(y_test, y_pred)
+recall = recall_score(y_test, y_pred)
+f1 = f1_score(y_test, y_pred)
+auc = roc_auc_score(y_test, y_pred)
+
+end_time = time.time()
+computational_time = end_time - start_time
+
+# Append the metrics to the DataFrame
+results_weather = results_weather.append({
+    'Model': 'Random Forest Classifier Scaled',
+    'Accuracy': accuracy,
+    'Precision': precision,
+    'Recall': recall,
+    'F1-score': f1,
+    'ROC AUC Score': auc,
+    'Computational Time': computational_time
+}, ignore_index=True)
+
+results_weather
+```
+
+### Random Forest Classifier with feature selection
+
+```{python}
+start_time = time.time()
+
+# Fit the model to the training data
+model_rf.fit(X_train_featureselection_weather, y_train)
+
+# Make predictions on the test data
+y_pred = model_rf.predict(X_test_featureselection_weather)
+
+# Calculate performance metrics
+accuracy = accuracy_score(y_test, y_pred)
+precision = precision_score(y_test, y_pred)
+recall = recall_score(y_test, y_pred)
+f1 = f1_score(y_test, y_pred)
+auc = roc_auc_score(y_test, y_pred)
+
+end_time = time.time()
+computational_time = end_time - start_time
+
+# Append the metrics to the DataFrame
+results_weather = results_weather.append({
+    'Model': 'Random Forest Classifier with Feature Selection',
+    'Accuracy': accuracy,
+    'Precision': precision,
+    'Recall': recall,
+    'F1-score': f1,
+    'ROC AUC Score': auc,
+    'Computational Time': computational_time
+}, ignore_index=True)
+
+results_weather
+```
+
+### Random Forest Classifier with feature selection Scaled
+
+```{python}
+start_time = time.time()
+
+# Fit the model to the training data
+model_rf.fit(X_train_featureselection_scaled_weather, y_train)
+
+# Make predictions on the test data
+y_pred = model_rf.predict(X_test_featureselection_scaled_weather)
+
+# Calculate performance metrics
+accuracy = accuracy_score(y_test, y_pred)
+precision = precision_score(y_test, y_pred)
+recall = recall_score(y_test, y_pred)
+f1 = f1_score(y_test, y_pred)
+auc = roc_auc_score(y_test, y_pred)
+
+end_time = time.time()
+computational_time = end_time - start_time
+
+# Append the metrics to the DataFrame
+results_weather = results_weather.append({
+    'Model': 'Random Forest Classifier with Feature Selection Scaled',
+    'Accuracy': accuracy,
+    'Precision': precision,
+    'Recall': recall,
+    'F1-score': f1,
+    'ROC AUC Score': auc,
+    'Computational Time': computational_time
+}, ignore_index=True)
+
+results_weather
+```
+
+### Gradient Boosting Classifier
+
+```{python}
+
+start_time = time.time()
+
+# Initialize Gradient Boosting Classifier
+gb_classifier = GradientBoostingClassifier()
+
+# Fit the model
+gb_classifier.fit(X_train, y_train)
+
+# Make predictions on the test data
+y_pred_gb = gb_classifier.predict(X_test)
+
+# Calculate accuracy for the Gradient Boosting Classifier
+accuracy_gb = accuracy_score(y_test, y_pred_gb)
+precision_gb = precision_score(y_test, y_pred_gb)
+recall_gb = recall_score(y_test, y_pred_gb)
+f1_gb = f1_score(y_test, y_pred_gb)
+auc_gb = roc_auc_score(y_test, y_pred_gb)
+
+end_time = time.time()
+computational_time = end_time - start_time 
+
+# Append the metrics to the DataFrame
+results_weather = results_weather.append({
+    'Model': 'Gradient Boosting Classifier',
+    'Accuracy': accuracy_gb,
+    'Precision': precision_gb,
+    'Recall': recall_gb,
+    'F1-score': f1_gb,
+    'ROC AUC Score': auc_gb,
+    'Computational Time': computational_time
+}, ignore_index=True)
+
+# Print the updated DataFrame
+results_weather
+```
+
+### Gradient Boosting Classifier with Scaled Data
+
+```{python}
+start_time = time.time()
+# Initialize Gradient Boosting Classifier
+gb_classifier = GradientBoostingClassifier()
+
+# Fit the model
+gb_classifier.fit(X_train_scaled_weather, y_train)
+
+# Make predictions on the test data
+y_pred_gbs = gb_classifier.predict(X_test_scaled_weather)
+
+# Calculate accuracy for the Gradient Boosting Classifier
+accuracy_gbs = accuracy_score(y_test, y_pred_gbs)
+precision_gbs = precision_score(y_test, y_pred_gbs)
+recall_gbs = recall_score(y_test, y_pred_gbs)
+f1_gbs = f1_score(y_test, y_pred_gbs)
+auc_gbs = roc_auc_score(y_test, y_pred_gbs)
+
+end_time = time.time()
+computational_time = end_time - start_time
+
+# Append the metrics to the DataFrame
+results_weather = results_weather.append({
+    'Model': 'Gradient Boosting Classifier Scaled',
+    'Accuracy': accuracy_gbs,
+    'Precision': precision_gbs,
+    'Recall': recall_gbs,
+    'F1-score': f1_gbs,
+    'ROC AUC Score': auc_gbs,
+    'Computational Time': computational_time
+}, ignore_index=True)
+
+# Print the updated DataFrame
+results_weather
+```
+
+### Gradient Boosting Classifier with Feature Selection
+
+```{python}
+start_time = time.time()
+# Initialize Gradient Boosting Classifier
+gb_classifier = GradientBoostingClassifier()
+
+# Fit the model
+gb_classifier.fit(X_train_featureselection_weather, y_train)
+
+# Make predictions on the test data
+y_pred_gbs = gb_classifier.predict(X_test_featureselection_weather)
+
+# Calculate accuracy for the Gradient Boosting Classifier
+accuracy_gbs = accuracy_score(y_test, y_pred_gbs)
+precision_gbs = precision_score(y_test, y_pred_gbs)
+recall_gbs = recall_score(y_test, y_pred_gbs)
+f1_gbs = f1_score(y_test, y_pred_gbs)
+auc_gbs = roc_auc_score(y_test, y_pred_gbs)
+
+end_time = time.time()
+computational_time = end_time - start_time
+
+# Append the metrics to the DataFrame
+results_weather = results_weather.append({
+    'Model': 'Gradient Boosting Classifier with Feature Selection',
+    'Accuracy': accuracy_gbs,
+    'Precision': precision_gbs,
+    'Recall': recall_gbs,
+    'F1-score': f1_gbs,
+    'ROC AUC Score': auc_gbs,
+    'Computational Time': computational_time
+}, ignore_index=True)
+
+# Print the updated DataFrame
+results_weather
+```
+
+### Gradient Boosting Classifier with Feature Selection Scaled
+
+```{python}
+start_time = time.time()
+# Initialize Gradient Boosting Classifier
+gb_classifier = GradientBoostingClassifier()
+
+# Fit the model
+gb_classifier.fit(X_train_featureselection_scaled_weather, y_train)
+
+# Make predictions on the test data
+y_pred_gbs = gb_classifier.predict(X_test_featureselection_scaled_weather)
+
+# Calculate accuracy for the Gradient Boosting Classifier
+accuracy_gbs = accuracy_score(y_test, y_pred_gbs)
+precision_gbs = precision_score(y_test, y_pred_gbs)
+recall_gbs = recall_score(y_test, y_pred_gbs)
+f1_gbs = f1_score(y_test, y_pred_gbs)
+auc_gbs = roc_auc_score(y_test, y_pred_gbs)
+
+end_time = time.time()
+computational_time = end_time - start_time
+
+# Append the metrics to the DataFrame
+results_weather = results_weather.append({
+    'Model': 'Gradient Boosting Classifier with Feature Selection Scaled',
+    'Accuracy': accuracy_gbs,
+    'Precision': precision_gbs,
+    'Recall': recall_gbs,
+    'F1-score': f1_gbs,
+    'ROC AUC Score': auc_gbs,
+    'Computational Time': computational_time
+}, ignore_index=True)
+
+# Print the updated DataFrame
+results_weather
+```
+
+### KNN Classifier
+
+```{python}
+
+X_test = np.array(X_test)
+
+start_time = time.time()
+
+# Initialize K-Nearest Neighbors Classifier
+knn_classifier = KNeighborsClassifier()
+
+# Fit the model
+knn_classifier.fit(X_train, y_train)
+
+# Make predictions on the test data
+y_pred_knn = knn_classifier.predict(X_test)
+
+# Calculate accuracy for the K-Nearest Neighbors Classifier
+accuracy_knn = accuracy_score(y_test, y_pred_knn)
+precision_knn = precision_score(y_test, y_pred_knn)
+recall_knn = recall_score(y_test, y_pred_knn)
+f1_knn = f1_score(y_test, y_pred_knn)
+auc_knn = roc_auc_score(y_test, y_pred_knn)
+
+end_time = time.time()
+computational_time = end_time - start_time
+
+# Append the metrics to the DataFrame
+results_weather = results_weather.append({
+    'Model': 'KNN Classifier',
+    'Accuracy': accuracy_knn,
+    'Precision': precision_knn,
+    'Recall': recall_knn,
+    'F1-score': f1_knn,
+    'ROC AUC Score': auc_knn,
+    'Computational Time': computational_time
+}, ignore_index=True)
+
+# Print the updated DataFrame
+results_weather
+```
+
+### KNN Classifier with Scaled Data
+
+```{python}
+
+X_test_scaled_weather = np.array(X_test_scaled_weather)
+
+start_time = time.time()
+
+# Fit the model
+knn_classifier.fit(X_train_scaled_weather, y_train)
+
+# Make predictions on the test data
+y_pred_knns = knn_classifier.predict(X_test_scaled_weather)
+
+# Append the accuracy score for the second model to the DataFrame
+accuracy_knns = accuracy_score(y_test, y_pred_knns)
+precision_knns = precision_score(y_test, y_pred_knns)
+recall_knns = recall_score(y_test, y_pred_knns)
+f1_knns = f1_score(y_test, y_pred_knns)
+auc_knns = roc_auc_score(y_test, y_pred_knns)
+
+end_time = time.time()
+computational_time = end_time - start_time
+
+# Append the metrics to the DataFrame
+results_weather = results_weather.append({
+    'Model': 'KNN Classifier Scaled',
+    'Accuracy': accuracy_knns,
+    'Precision': precision_knns,
+    'Recall': recall_knns,
+    'F1-score': f1_knns,
+    'ROC AUC Score': auc_knns,
+    'Computational Time': computational_time
+}, ignore_index=True)
+
+# Print the updated DataFrame
+results_weather
+```
+
+### KNN Classifier with Feature Selection
+
+```{python}
+
+X_test_featureselection_weather = np.array(X_test_featureselection_weather)
+
+start_time = time.time()
+
+# Fit the model
+knn_classifier.fit(X_train_featureselection_weather, y_train)
+
+# Make predictions on the test data
+y_pred_knns = knn_classifier.predict(X_test_featureselection_weather)
+
+# Append the accuracy score for the second model to the DataFrame
+accuracy_knns = accuracy_score(y_test, y_pred_knns)
+precision_knns = precision_score(y_test, y_pred_knns)
+recall_knns = recall_score(y_test, y_pred_knns)
+f1_knns = f1_score(y_test, y_pred_knns)
+auc_knns = roc_auc_score(y_test, y_pred_knns)
+
+end_time = time.time()
+computational_time = end_time - start_time
+
+# Append the metrics to the DataFrame
+results_weather = results_weather.append({
+    'Model': 'KNN Classifier with Feature Selection',
+    'Accuracy': accuracy_knns,
+    'Precision': precision_knns,
+    'Recall': recall_knns,
+    'F1-score': f1_knns,
+    'ROC AUC Score': auc_knns,
+    'Computational Time': computational_time
+}, ignore_index=True)
+
+# Print the updated DataFrame
+results_weather
+```
+
+### KNN Classifier with Feature Selection Scaled 
+
+```{python}
+
+X_test_featureselection_scaled_weather = np.array(X_test_featureselection_scaled_weather)
+
+start_time = time.time()
+
+# Fit the model
+knn_classifier.fit(X_train_featureselection_scaled_weather, y_train)
+
+# Make predictions on the test data
+y_pred_knns = knn_classifier.predict(X_test_featureselection_scaled_weather)
+
+# Append the accuracy score for the second model to the DataFrame
+accuracy_knns = accuracy_score(y_test, y_pred_knns)
+precision_knns = precision_score(y_test, y_pred_knns)
+recall_knns = recall_score(y_test, y_pred_knns)
+f1_knns = f1_score(y_test, y_pred_knns)
+auc_knns = roc_auc_score(y_test, y_pred_knns)
+
+end_time = time.time()
+computational_time = end_time - start_time
+
+# Append the metrics to the DataFrame
+results_weather = results_weather.append({
+    'Model': 'KNN Classifier with Feature Selection Scaled',
+    'Accuracy': accuracy_knns,
+    'Precision': precision_knns,
+    'Recall': recall_knns,
+    'F1-score': f1_knns,
+    'ROC AUC Score': auc_knns,
+    'Computational Time': computational_time
+}, ignore_index=True)
+
+# Print the updated DataFrame
+results_weather
+```
+
+### AdaBoost Classifier 
+
+```{python}
+
+start_time = time.time()
+# Initialize AdaBoost Classifier
+adaboost_classifier = AdaBoostClassifier()
+
+# Fit the model
+adaboost_classifier.fit(X_train, y_train)
+
+# Make predictions on the test data
+y_pred_adaboost = adaboost_classifier.predict(X_test)
+
+# Calculate accuracy for the AdaBoost Classifier
+accuracy_adaboost = accuracy_score(y_test, y_pred_adaboost)
+precision_adaboost = precision_score(y_test, y_pred_adaboost)
+recall_adaboost = recall_score(y_test, y_pred_adaboost)
+f1_adaboost = f1_score(y_test, y_pred_adaboost)
+auc_adaboost = roc_auc_score(y_test, y_pred_adaboost)
+
+end_time = time.time()
+computational_time = end_time - start_time
+
+# Append the metrics to the DataFrame
+results_weather = results_weather.append({
+    'Model': 'AdaBoost Classifier',
+    'Accuracy': accuracy_adaboost,
+    'Precision': precision_adaboost,
+    'Recall': recall_adaboost,
+    'F1-score': f1_adaboost,
+    'ROC AUC Score': auc_adaboost,
+    'Computational Time': computational_time
+}, ignore_index=True)
+
+# Print the updated DataFrame
+results_weather
+```
+
+### AdaBoost Classifier Scaled
+
+```{python}
+start_time = time.time()
+
+# Fit the model
+adaboost_classifier.fit(X_train_scaled_weather, y_train)
+
+# Make predictions on the test data
+y_pred_adaboost = adaboost_classifier.predict(X_test_scaled_weather)
+
+# Calculate accuracy for the AdaBoost Classifier
+accuracy_adaboost = accuracy_score(y_test, y_pred_adaboost)
+precision_adaboost = precision_score(y_test, y_pred_adaboost)
+recall_adaboost = recall_score(y_test, y_pred_adaboost)
+f1_adaboost = f1_score(y_test, y_pred_adaboost)
+auc_adaboost = roc_auc_score(y_test, y_pred_adaboost)
+
+end_time = time.time()
+computational_time = end_time - start_time
+
+# Append the metrics to the DataFrame
+results_weather = results_weather.append({
+    'Model': 'AdaBoost Classifier Scaled',
+    'Accuracy': accuracy_adaboost,
+    'Precision': precision_adaboost,
+    'Recall': recall_adaboost,
+    'F1-score': f1_adaboost,
+    'ROC AUC Score': auc_adaboost,
+    'Computational Time': computational_time
+}, ignore_index=True)
+
+# Print the updated DataFrame
+results_weather
+```
+
+### AdaBoost Classifier with Feature Selection
+
+```{python}
+start_time = time.time()
+
+# Fit the model
+adaboost_classifier.fit(X_train_featureselection_weather, y_train)
+
+# Make predictions on the test data
+y_pred_adaboost = adaboost_classifier.predict(X_test_featureselection_weather)
+
+# Calculate accuracy for the AdaBoost Classifier
+accuracy_adaboost = accuracy_score(y_test, y_pred_adaboost)
+precision_adaboost = precision_score(y_test, y_pred_adaboost)
+recall_adaboost = recall_score(y_test, y_pred_adaboost)
+f1_adaboost = f1_score(y_test, y_pred_adaboost)
+auc_adaboost = roc_auc_score(y_test, y_pred_adaboost)
+
+end_time = time.time()
+computational_time = end_time - start_time
+
+# Append the metrics to the DataFrame
+results_weather = results_weather.append({
+    'Model': 'AdaBoost Classifier with Feature Selection',
+    'Accuracy': accuracy_adaboost,
+    'Precision': precision_adaboost,
+    'Recall': recall_adaboost,
+    'F1-score': f1_adaboost,
+    'ROC AUC Score': auc_adaboost,
+    'Computational Time': computational_time
+}, ignore_index=True)
+
+# Print the updated DataFrame
+results_weather
+```
+
+### AdaBoost Classifier with Feature Selection Scaled
+
+```{python}
+start_time = time.time()
+
+# Fit the model
+adaboost_classifier.fit(X_train_featureselection_scaled_weather, y_train)
+
+# Make predictions on the test data
+y_pred_adaboost = adaboost_classifier.predict(X_test_featureselection_scaled_weather)
+
+# Calculate accuracy for the AdaBoost Classifier
+accuracy_adaboost = accuracy_score(y_test, y_pred_adaboost)
+precision_adaboost = precision_score(y_test, y_pred_adaboost)
+recall_adaboost = recall_score(y_test, y_pred_adaboost)
+f1_adaboost = f1_score(y_test, y_pred_adaboost)
+auc_adaboost = roc_auc_score(y_test, y_pred_adaboost)
+
+end_time = time.time()
+computational_time = end_time - start_time
+
+# Append the metrics to the DataFrame
+results_weather = results_weather.append({
+    'Model': 'AdaBoost Classifier with Feature Selection Scaled',
+    'Accuracy': accuracy_adaboost,
+    'Precision': precision_adaboost,
+    'Recall': recall_adaboost,
+    'F1-score': f1_adaboost,
+    'ROC AUC Score': auc_adaboost,
+    'Computational Time': computational_time
+}, ignore_index=True)
+
+# Print the updated DataFrame
+results_weather
+```
+
+```{python}
+results_weather
+```
+
+
+Now, let us analyze the performance metrics and also the computational time for the Weather in Australia Dataset:
+
+***Accuracy:*** The Random Forest Classifier and Random Forest Classifier Scaled have the highest accuracy of 0.857295 and 0.856719, respectively. Random Forest classifiers is known for their robust performance and ability to handle complex datasets with high dimensionality. Scaling the features can also improve the performance of the Random Forest model.
+
+***Precision:*** The Random Forest Classifier and Random Forest Classifier Scaled have the highest precision values of 0.771091 and 0.769253, respectively. This means that these models have a high proportion of correct positive predictions relative to all positive predictions made.
+
+***Recall:*** The Decision Tree Classifier and Decision Tree Classifier Scaled have the highest recall values, both achieving a value of 0.539419. This means that these models effectively identify a significant portion of the actual positive instances in the dataset.
+
+***F1-score:*** The Random Forest Classifier has the highest F1-score of 0.618625.The F1-score is the harmonic mean of precision and recall, providing a balanced measure of a model's performance. Random Forest classifiers often achieve high F1-scores due to their ability to balance precision and recall effectively.
+
+***ROC AUC Score*** The Random Forest Classifier and Random Forest Classifier Scaled have the highest ROC AUC scores, with values of 0.736108 and 0.735246, respectively. A higher ROC AUC score indicates better discrimination between the positive and negative classes.
+
+***Computational time*** The Decision Tree Classifier has the lowest computational time of 1.232634 seconds. The computational time aspect is crucial, especially in scenarios where efficiency and speed are significant considerations.
+
+Based on these observations, we can conclude the following:
+
+The Random Forest Classifier and Random Forest Classifier Scaled consistently perform well across multiple metrics, including accuracy, precision, F1-score, and ROC AUC score. They achieve high scores in these metrics while maintaining reasonable computational times. The Decision Tree Classifier and Decision Tree Classifier Scaled have lower computational times but generally lower performance metrics compared to Random Forest classifiers. Logistic Regression Classifier variants and AdaBoost Classifier variants also show competitive performance but are slightly outperformed by Random Forest classifiers in terms of accuracy and precision. 
+
+Therefore, if we prioritize overall performance across various metrics, the ***Random Forest Classifier or Random Forest Classifier Scaled*** would be the best choices. These models offer a good balance between predictive performance and computational efficiency.
+
+
+# Health Sector: Cardiovascular Data Set
+
+## Cardiovascular - Exploratory Data Analysis (EDA)
+
+```{python, message=FALSE}
+#| label: data shape
+
+#weather.shape
+#cardio.shape
+#hotel.shape
+
+# Define the names of the datasets
+datasets = ['weather', 'cardio', 'hotel']
+
+# Define the shapes of the datasets
+shapes = [(weather.shape[0], weather.shape[1]),
+          (cardio.shape[0], cardio.shape[1]),
+          (hotel.shape[0], hotel.shape[1])]
+
+# Create a DataFrame with the dataset names and their respective shapes
+alldf = pd.DataFrame(shapes, columns=['Rows', 'Columns'], index=datasets)
+
+alldf
+```
+
+```{python}
+#| label: cardio data exploring
+
+cardio.head()
+cardio.info()
+cardio.isnull().sum()
+cardio.describe().T
+```
+
+```{python}
+#| label: cardio data cleaning
+
+cardio.duplicated().sum()
+cardio.drop_duplicates()
+cardio.nunique()
+```
+
+```{python}
+#| label: cardio boxplot
+
+# Select only numerical columns
+numeric_columns = cardio.select_dtypes(include=[np.number]).columns[~cardio.select_dtypes(include=[np.number]).columns.str.contains('Unnamed')]
+
+# Calculate the number of rows and columns for subplots
+num_columns = len(numeric_columns)
+num_rows = (num_columns + 3) // 2 # Ensure at least 3 plots per row
+num_cols = min(num_columns, 2)
+
+# Set up the matplotlib figure and axes
+fig, axs = plt.subplots(nrows=num_rows, ncols=num_cols, figsize=(15 * num_cols, 5 * num_rows))
+
+# Flatten the axes array for easy iteration
+axs = axs.flatten()
+
+# Loop through each numerical column and plot a boxplot
+for i, column in enumerate(numeric_columns):
+    sns.boxplot(x=cardio[column], ax=axs[i], width=0.3)
+    axs[i].set_title(f'Boxplot of {column}')
+    axs[i].set_xlabel('')
+
+# Remove empty subplots
+for i in range(num_columns, num_rows * num_cols):
+    fig.delaxes(axs[i])
+
+# Adjust layout
+plt.tight_layout()
+plt.show()
+```
+
+```{python}
+#| label: cardio histogram only numerical
+numeric_columns = cardio.select_dtypes(include=['int64', 'float64']).columns
+
+# Calculate the number of rows and columns for subplots
+num_columns = len(numeric_columns)
+num_rows = math.ceil(num_columns / 2)  # Use ceil to round up and ensure enough rows
+
+# Set up the matplotlib figure and axes
+fig, axs = plt.subplots(nrows=num_rows, ncols=2, figsize=(30, 6 * num_rows))
+
+# Flatten the axes array for easy iteration
+axs = axs.flatten()
+
+# Loop through each numerical column and plot a histogram
+for i, column in enumerate(numeric_columns):
+    if i < len(axs):  # Ensure we don't go out of bounds
+        sns.histplot(cardio[column], ax=axs[i], bins=15, kde=True, color='skyblue', edgecolor='black')
+        axs[i].set_title(f'Histogram of {column}')
+        axs[i].set_xlabel('Value')
+        axs[i].set_ylabel('Frequency')
+    else:  # If there are more columns than subplots, break the loop
+        break
+
+# Hide any unused axes if the number of columns is odd
+if num_columns % 2 != 0:
+    axs[-1].set_visible(False)  # Hide the last subplot if unused
+
+# Adjust layout to prevent overlapping
+plt.tight_layout()
+plt.show()
+```
+
+- Height (cm): The distribution appears to be roughly normal, suggesting that the height of individuals in the dataset is symmetrically distributed around a central value. There might be some minor outliers on the higher end, as suggested by the small bars on the right.
+
+- Weight (kg): This histogram also suggests a roughly normal distribution, but with a slight right skew, indicating that there are more individuals with higher weight values than what would be expected in a perfectly normal distribution.
+
+- BMI: The Body Mass Index (BMI) distribution appears to have a right skew, which means there are a significant number of individuals with a higher BMI in the dataset. This might suggest a tendency towards overweight or obesity within the sample.
+
+- Alcohol Consumption: Most individuals consume alcohol very infrequently, as indicated by the high frequency of low values and the long tail towards the right. This could indicate that the majority of individuals in the dataset do not consume alcohol regularly.
+
+- Fruit Consumption: The distribution is multimodal, meaning there are several peaks, which suggests that there are distinct groups within the dataset when it comes to fruit consumption. Some consume it very infrequently, while others might consume it more regularly.
+
+- Green Vegetables Consumption: Similar to fruit consumption, this variable also appears to be multimodal. There are peaks at the lower end of the scale, indicating that a portion of the population consumes green vegetables infrequently.
+
+- Fried Potato Consumption: This variable shows that a large number of individuals consume fried potatoes infrequently with a long tail to the right, suggesting that while the majority consume it rarely, there is a small portion of the population that consumes it more regularly.
+
+```{python}
+#| label: cardio histogram - target variable
+
+sns.histplot(cardio['Heart_Disease'], bins = 10, kde=False, color='skyblue', edgecolor='black', linewidth=1.2, alpha=0.7)
+plt.title('Histogram of Heart Disease')
+plt.ylabel('Count')
+plt.xlabel('Heart Disease')
+
+# Annotate each bar with its count
+for rect in plt.gca().patches:
+    x = rect.get_x() + rect.get_width() / 2
+    y = rect.get_height()
+    plt.gca().annotate(f'{int(y)}', (x, y), xytext=(0, 5), textcoords='offset points', ha='center', color='black')
+
+plt.tight_layout()  # Adjust layout to prevent overlapping
+plt.show()
+```
+
+```{python}
+#| label: cardio histogram - other categorical variables
+
+# Calculate counts for each category
+sex_counts = cardio['Sex'].value_counts()
+age_counts = cardio['Age_Category'].value_counts()
+smoking_counts = cardio['Smoking_History'].value_counts()
+General_Health_counts = cardio['General_Health'].value_counts()
+
+# Creating subplots for all four bar charts
+fig, axes = plt.subplots(nrows=1, ncols=4, figsize=(25, 10))
+
+# Bar chart for Sex
+axes[0].bar(sex_counts.index, sex_counts.values, color='lightblue')
+axes[0].set_title('Distribution of Sex')
+axes[0].set_xlabel('Sex')
+axes[0].set_ylabel('Count')
+
+# Bar chart for Age_Category
+axes[1].bar(age_counts.index, age_counts.values, color='skyblue')
+axes[1].set_title('Distribution of Age Categories')
+axes[1].set_xlabel('Age Categories')
+axes[1].set_ylabel('Count')
+axes[1].tick_params(axis='x', rotation=45)
+
+# Bar chart for Smoking_History
+axes[2].bar(smoking_counts.index, smoking_counts.values, color='blue')
+axes[2].set_title('Smoking History')
+axes[2].set_xlabel('Smoking History')
+axes[2].set_ylabel('Count')
+
+# Bar chart for general health
+axes[3].bar(General_Health_counts.index,General_Health_counts.values,color='darkblue')
+axes[3].set_title('distribution of general health')
+axes[3].set_xlabel('health')
+axes[3].set_ylabel('count')
+
+plt.tight_layout()
+plt.show()
+```
+
+- Distribution of Sex: The count for females appears to be higher than that for males in the dataset. 
+
+- Distribution of Age Categories: The chart suggests that the dataset includes a broader representation of middle-aged individuals (seemingly those in their 60s and 70s) compared to older and younger age groups. The distribution of age can inform about the prevalence of certain conditions or the focus of healthcare for the age demographics most represented.
+
+- Smoking History: There are significantly more individuals without a smoking history than with one. This can be an important factor in analyzing cardiovascular health, as smoking is a known risk factor for many diseases.
+
+- Distribution of General Health: Most individuals rate their health as 'Very Good' or 'Good', while fewer individuals report their health as 'Fair' or 'Poor'. This self-assessment can be subjective but may correlate with actual health status and risk factors.
+
+```{python}
+#| label: cardio visualization - sex and BMI
+
+#boxplot for Sex and BMI
+plt.figure(figsize=(12, 10))
+sns.boxplot(x='Sex', y='BMI', data=cardio)
+plt.title('Boxplot of BMI by Sex Category')
+plt.xlabel('Sex')
+plt.ylabel('BMI')
+plt.show()
+```
+
+- The median BMI for both females and males is approximately in the 25-30 range, which is generally considered to be overweight by most medical standards.
+
+- Both sexes have a significant number of outliers, which could be individuals who are extremely underweight or obese. The presence of outliers on both the low and high ends indicates that there is a substantial variation in BMI among both sexes in this dataset.
+
+```{python}
+#| label: cardio visualization - sex and heart disease
+
+plt.figure(figsize=(12, 10))
+sns.countplot(x='Sex', hue='Heart_Disease', hue_order=['Yes', 'No'], data=cardio)
+plt.title('Barplot of Heart Disease by Sex Category')
+plt.xlabel('Sex')
+plt.ylabel('Counts')
+plt.legend(title='Heart Disease')
+plt.show()
+```
+
+```{python}
+#| label: cardio visualization - age and general health
+
+#Stacked Area Chart Age_Category by General_Health.
+crosstab = pd.crosstab(cardio['Age_Category'], cardio['General_Health'])
+crosstab.plot(kind='area', colormap='plasma', alpha=0.7, stacked=True)
+plt.title('Stacked Area Chart: Age Category by General Health')
+plt.xlabel('Age Category')
+plt.ylabel('Count')
+plt.show()
+```
+
+- The total count of individuals peaks in the 50-54 age category and then gradually declines, suggesting that the dataset may have a larger number of middle-aged individuals.
+
+- The relative proportion of individuals reporting 'Excellent' health diminishes with age, while those reporting 'Poor' health increases, especially after the 70-74 age category.
+
+```{python}
+#| label: cardio visualization - age and heart disease
+
+#Stacked Area Chart Age_Category by Heart Disease.
+crosstab = pd.crosstab(cardio['Age_Category'], cardio['Heart_Disease'])
+crosstab.plot(kind='area', colormap='plasma', alpha=0.7, stacked=True)
+plt.title('Stacked Area Chart: Age Category by General Health')
+plt.xlabel('Age Category')
+plt.ylabel('Count')
+plt.show()
+```
+
+```{python}
+#| label: cardio label encoding
+# Create a copy of the DataFrame to avoid modifying the original
+cardio_encoded = cardio.copy()
+
+# Create a label encoder object
+label_encoder = LabelEncoder()
+
+# Iterate through each object column and encode its values
+for column in cardio_encoded.select_dtypes(include='object'):
+    cardio_encoded[column] = label_encoder.fit_transform(cardio_encoded[column])
+
+# Now, df_encoded contains the label-encoded categorical columns
+cardio_encoded.head()
+```
+
+```{python}
+#| label: cardio visualization - correlation matrix 1
+
+# Calculate the correlation matrix for Data
+correlation_matrix = cardio_encoded.corr()
+
+# Create a heatmap
+plt.figure(figsize=(12, 10))
+heatmap = sns.heatmap(correlation_matrix, annot=False, cmap='viridis')  # Turn off automatic annotations
+plt.title("Correlation Heatmap")
+
+# Annotate each cell with the numeric value using matplotlib's `text` function
+for i in range(correlation_matrix.shape[0]):
+    for j in range(correlation_matrix.shape[1]):
+        plt.text(j + 0.5, i + 0.5, f"{correlation_matrix.iloc[i, j]:.2f}",
+                 ha='center', va='center', color='white')
+
+plt.show()
+```
+
+- Checkup (0.09): Suggests that those with heart disease may have more frequent checkups, or it could be that frequent checkups increase the likelihood of diagnosing heart disease.
+
+- Age_Category (0.19): Implies that older age categories are more strongly associated with the occurrence of heart disease, which aligns with general medical knowledge that the risk of heart disease increases with age.
+
+- Exercise (-0.14): It is negatively correlated with heart disease, suggesting that individuals who exercise may have a lower occurrence of heart disease.
+
+- Alcohol_Consumption (0.12): Indicates a potential link between higher alcohol consumption and the presence of heart disease, although this correlation is not very strong.
+
+- Diabetes (0.13): This positive correlation suggests that diabetes is associated with a higher likelihood of heart disease, which is consistent with medical knowledge.
+
+```{python}
+#| label: cardio visualization - heatmap
+
+# Food Consumption Patterns Across Age Categories
+heatmap_data = cardio.pivot_table(index='Age_Category', values=['Fruit_Consumption', 'Green_Vegetables_Consumption', 'FriedPotato_Consumption'])
+# Create a heatmap
+plt.figure(figsize=(15, 6))
+sns.heatmap(heatmap_data, cmap='coolwarm', annot=True, fmt=".2f", linewidths=.5)
+
+plt.title('Food Consumption Patterns Across Age Categories')
+for i in range(heatmap_data.shape[0]):
+    for j in range(heatmap_data.shape[1]):
+        plt.text(j + 0.5, i + 0.5, f"{heatmap_data.iloc[i, j]:.2f}",
+                 ha='center', va='center', color='black')
+
+plt.show()
+```
+
+- Fried Potato Consumption: Consumption of fried potatoes tends to decrease with age. The youngest age group (18-24) has the highest average consumption at 9.28, and it gradually declines as age increases, reaching the lowest at 4.94 for the 80+ age group. 
+
+- Fruit Consumption: Fruit consumption appears relatively stable across age groups, but there is a slight trend of increasing consumption with age. The 30-34 age group starts an upward trend, peaking at 32.08 for the 80+ age group. 
+
+- Green Vegetables Consumption: The consumption of green vegetables shows an inconsistent pattern but generally maintains moderate frequency across age groups. The lowest consumption is noted in the 18-24 age group (11.71), while other age categories fluctuate without a clear trend.
+
+```{python}
+#| label: cardio visualization - correlation with target variable 
+
+# Compute the correlation with 'Heart_Disease' for each numerical column
+correlation_HD = cardio_encoded.corr()['Heart_Disease'].sort_values(ascending=False)
+correlation_HD
+
+# Plot the correlations
+plt.figure(figsize=(14, 7))
+correlation_HD.plot(kind='bar', color='skyblue')
+plt.xlabel('Variables')
+plt.ylabel('Correlation with Heart Disease')
+plt.title('Correlation of Variables with Heart Disease')
+plt.show()
+```
+
+## Cardiovascular - Data preprocessing
+
+```{python}
+#| label: cardio - checking missing values
+
+missing_values = cardio.isnull().sum()
+print(missing_values)
+```
+
+```{python}
+#| label: cardio - checking no string format
+
+#Lets get confirmed that none of our variables are in string format
+cardio_encoded.dtypes
+```
+
+```{python}
+class_distribution1 = cardio['Heart_Disease'].value_counts()
+
+class_proportions1 = cardio['Heart_Disease'].value_counts(normalize=True)
+
+imbalance_ratio1 = class_distribution1[1] / class_distribution1[0]
+
+# Print imbalance ratio
+imbalance_ratio1
+```
+
+```{python}
+#| label: cardio - spliting the data
+
+# Load data
+X = cardio_encoded.drop(columns=['Heart_Disease'])
+y = cardio_encoded['Heart_Disease']
+
+# Train-test split
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+
+# Initialize the StandardScaler
+scaler = StandardScaler()
+
+# Fit the scaler to the training data
+scaler.fit(X_train)
+
+# Transform the training and testing data separately
+X_train_scaled = scaler.transform(X_train)
+X_test_scaled = scaler.transform(X_test)
+
+# Convert scaled data back to DataFrames
+X_train_scaled_cardio = pd.DataFrame(X_train_scaled, columns=X.columns)
+X_test_scaled_cardio = pd.DataFrame(X_test_scaled, columns=X.columns)
+```
+
+```{python}
+#| label: cardio - feature selection
+target_variable = 'Heart_Disease'
+k=10
+X = cardio_encoded.drop(columns=[target_variable])
+y = cardio_encoded[target_variable]
+selector = SelectKBest(score_func=f_classif, k=k)
+X_selected = selector.fit_transform(X, y)
+selected_feature_indices = selector.get_support(indices=True)
+selected_feature = cardio_encoded.columns[selected_feature_indices].tolist()
+print("Selected Features using SelectKBest:")
+print(selected_feature)
+
+X_train_fs_cardio = X_train.drop(columns = ['General_Health', 'Other_Cancer', 'Age_Category', 'Weight_(kg)', 'Smoking_History', 'Alcohol_Consumption', 'Fruit_Consumption', 'Green_Vegetables_Consumption', 'FriedPotato_Consumption'])
+
+X_test_fs_cardio = X_test.drop(columns = ['General_Health', 'Other_Cancer', 'Age_Category', 'Weight_(kg)', 'Smoking_History', 'Alcohol_Consumption', 'Fruit_Consumption', 'Green_Vegetables_Consumption', 'FriedPotato_Consumption'])
+
+X_train_fs_scaled_cardio = X_train_scaled_cardio.drop(columns = ['General_Health', 'Other_Cancer', 'Age_Category', 'Weight_(kg)', 'Smoking_History', 'Alcohol_Consumption', 'Fruit_Consumption', 'Green_Vegetables_Consumption', 'FriedPotato_Consumption'])
+
+X_test_fs_scaled_cardio = X_test_scaled_cardio.drop(columns = ['General_Health', 'Other_Cancer', 'Age_Category', 'Weight_(kg)', 'Smoking_History', 'Alcohol_Consumption', 'Fruit_Consumption', 'Green_Vegetables_Consumption', 'FriedPotato_Consumption'])
+```
+
+```{python}
+#| label: improve imbalance - resampling (undersampling)
+
+majority = cardio_encoded[cardio_encoded['Heart_Disease'] == 0]
+minority = cardio_encoded[cardio_encoded['Heart_Disease'] == 1]
+
+# Downsample majority class with 80:20 ratio
+majority_downsampled = resample(majority,
+                                replace=False,                # Sample without replacement
+                                n_samples=int(len(minority)*4), # Match 80% of minority class
+                                random_state=42)              # Reproducible results
+
+# Combine minority class with downsampled majority class
+downsampled = pd.concat([majority_downsampled, minority])
+
+# Display new class counts
+downsampled['Heart_Disease'].value_counts()
+```
+
+```{python}
+#| label: improve imbalance - resampling (oversampling)
+
+# Separate majority and minority classes
+majority = cardio_encoded[cardio_encoded['Heart_Disease'] == 0]
+minority = cardio_encoded[cardio_encoded['Heart_Disease'] == 1]
+
+# Upsample minority class
+minority_upsampled = resample(minority,
+                              replace=True,                   # Sample with replacement
+                              n_samples=len(majority),        # Match number in majority class
+                              random_state=42)                # Reproducible results
+
+# Combine majority class with upsampled minority class
+upsampled = pd.concat([majority, minority_upsampled])
+
+# Display new class counts
+upsampled['Heart_Disease'].value_counts()
+```
+
+In both cases, you would then proceed to use the upsampled or downsampled DataFrame for your model training. Keep in mind that with resampling techniques, particularly upsampling, there is a risk of overfitting since it replicates the minority class examples. It's often a good idea to combine resampling with other techniques, like adding some noise to the samples, to improve generalization.
+
+```{python}
+#| label: spliting for resampling data
+#| 
+X_downsampled = downsampled.drop('Heart_Disease', axis=1)
+y_downsampled = downsampled['Heart_Disease']
+
+X_train_ds, X_test_ds, y_train_ds, y_test_ds = train_test_split(
+    X_downsampled, y_downsampled, test_size=0.2, random_state=42, stratify=y_downsampled)
+
+# Initialize the StandardScaler
+scaler = StandardScaler()
+
+# Fit the scaler to the training data
+scaler.fit(X_train_ds)
+
+# Transform the training and testing data separately
+X_train_ds_scaled = scaler.transform(X_train_ds)
+X_test_ds_scaled = scaler.transform(X_test_ds)
+
+# Convert scaled data back to DataFrames
+X_train_ds_scaled_cardio = pd.DataFrame(X_train_ds_scaled, columns=X.columns)
+X_test_ds_scaled_cardio = pd.DataFrame(X_test_scaled, columns=X.columns)
+```
+
+## Cardiovascular - Modeling
+
+### Logistic Regression
+
+#### Logistic Regression with All Variables
+```{python}
+#| label: logistic regression with all variables
+
+# Initialize an empty DataFrame to store all results
+results_cardio = pd.DataFrame(columns=['Model', 'Accuracy', 'Precision', 'Recall', 'F1-score', 'ROC AUC Score', 'Computational Time'])
+
+# Start timing
+start_time = time.time()
+
+# Initialize Logistic Regression model
+log_model = LogisticRegression()
+
+# Fit the model on the training data
+log_model.fit(X_train, y_train)
+
+# Make predictions on the testing data
+y_pred_log = log_model.predict(X_test)
+
+# Calculate performance metrics
+accuracy = accuracy_score(y_test, y_pred_log)
+precision = precision_score(y_test, y_pred_log)
+recall = recall_score(y_test, y_pred_log)
+f1 = f1_score(y_test, y_pred_log)
+auc = roc_auc_score(y_test, y_pred_log)
+
+# Calculate computational time
+end_time = time.time()
+computational_time = end_time - start_time
+
+# Create a new row as a DataFrame to append
+new_row = pd.DataFrame([{
+    'Model': 'Logistic Regression with All Variables',
+    'Accuracy': accuracy,
+    'Precision': precision,
+    'Recall': recall,
+    'F1-score': f1,
+    'ROC AUC Score': auc,
+    'Computational Time': computational_time
+}])
+
+results_cardio = pd.concat([results_cardio, new_row], ignore_index=True)
+
+results_cardio
+```
+
+#### Logistic Regression with Scaled Data
+```{python}
+#| label: Logistic Regression with scaled data
+
+# Start timing
+start_time = time.time()
+
+# Fit the model on the scaled training data
+log_model.fit(X_train_scaled_cardio, y_train)
+
+# Make predictions on the scaled test data
+y_pred = log_model.predict(X_test_scaled_cardio)
+
+# Calculate performance metrics
+accuracy = accuracy_score(y_test, y_pred)
+precision = precision_score(y_test, y_pred)
+recall = recall_score(y_test, y_pred)
+f1 = f1_score(y_test, y_pred)
+auc = roc_auc_score(y_test, y_pred)
+
+# Calculate computational time
+end_time = time.time()
+computational_time = end_time - start_time
+
+# Create a new row as a DataFrame to append
+new_row = pd.DataFrame([{
+    'Model': 'Logistic Regression with Scaled Data',
+    'Accuracy': accuracy,
+    'Precision': precision,
+    'Recall': recall,
+    'F1-score': f1,
+    'ROC AUC Score': auc,
+    'Computational Time': computational_time
+}])
+
+# Append the new row using pd.concat
+results_cardio = pd.concat([results_cardio, new_row], ignore_index=True)
+
+results_cardio
+```
+
+#### Logistic Regression with Feature Selection
+```{python}
+#| label: Logistic Regression with feature selection
+
+# Start timing
+start_time = time.time()
+
+# Fit the model on the kbest training data 
+log_model.fit(X_train_fs_cardio, y_train)
+
+# Make predictions on the kbest testing data
+y_pred = log_model.predict(X_test_fs_cardio)
+
+# Calculate performance metrics
+accuracy = accuracy_score(y_test, y_pred)
+precision = precision_score(y_test, y_pred)
+recall = recall_score(y_test, y_pred)
+f1 = f1_score(y_test, y_pred)
+auc = roc_auc_score(y_test, y_pred)
+
+# Calculate computational time
+end_time = time.time()
+computational_time = end_time - start_time
+
+# Create a new row as a DataFrame to append
+new_row = pd.DataFrame([{
+    'Model': 'Logistic Regression with Feature Selection',
+    'Accuracy': accuracy,
+    'Precision': precision,
+    'Recall': recall,
+    'F1-score': f1,
+    'ROC AUC Score': auc,
+    'Computational Time': computational_time
+}])
+
+# Append the new row using pd.concat
+results_cardio = pd.concat([results_cardio, new_row], ignore_index=True)
+
+results_cardio
+```
+
+#### Logistic Regression with Scaled Feature Selection
+```{python}
+#| label: Logistic Regression with scaled feature selection
+
+# Start timing
+start_time = time.time()
+
+# Fit the model on the kbest training data 
+log_model.fit(X_train_fs_scaled_cardio, y_train)
+
+# Make predictions on the kbest testing data
+y_pred = log_model.predict(X_test_fs_scaled_cardio)
+
+# Calculate performance metrics
+accuracy = accuracy_score(y_test, y_pred)
+precision = precision_score(y_test, y_pred)
+recall = recall_score(y_test, y_pred)
+f1 = f1_score(y_test, y_pred)
+auc = roc_auc_score(y_test, y_pred)
+
+# Calculate computational time
+end_time = time.time()
+computational_time = end_time - start_time
+
+# Create a new row as a DataFrame to append
+new_row = pd.DataFrame([{
+    'Model': 'Logistic Regression with Scaled Feature Selection',
+    'Accuracy': accuracy,
+    'Precision': precision,
+    'Recall': recall,
+    'F1-score': f1,
+    'ROC AUC Score': auc,
+    'Computational Time': computational_time
+}])
+
+# Append the new row using pd.concat
+results_cardio = pd.concat([results_cardio, new_row], ignore_index=True)
+
+results_cardio
+```
+
+#### Logistic Regression with Resampling
+```{python}
+#| label: Logistic Regression with resampling
+
+# Start timing
+start_time = time.time()
+
+# Fit the model on the kbest training data 
+log_model.fit(X_train_ds, y_train_ds)
+
+# Make predictions on the kbest testing data
+y_pred_ds = log_model.predict(X_test_ds)
+
+# Calculate performance metrics
+accuracy = accuracy_score(y_test_ds, y_pred_ds)
+precision = precision_score(y_test_ds, y_pred_ds)
+recall = recall_score(y_test_ds, y_pred_ds)
+f1 = f1_score(y_test_ds, y_pred_ds)
+auc = roc_auc_score(y_test_ds, y_pred_ds)
+
+# Calculate computational time
+end_time = time.time()
+computational_time = end_time - start_time
+
+# Create a new row as a DataFrame to append
+new_row = pd.DataFrame([{
+    'Model': 'Logistic Regression with Resampling',
+    'Accuracy': accuracy,
+    'Precision': precision,
+    'Recall': recall,
+    'F1-score': f1,
+    'ROC AUC Score': auc,
+    'Computational Time': computational_time
+}])
+
+# Append the new row using pd.concat
+results_cardio = pd.concat([results_cardio, new_row], ignore_index=True)
+
+results_cardio
+```
+
+#### Logistic Regression Comparison with Confusion Matrix
+```{python}
+#| label: Logistic - confusion_matrix (all)
+
+# Fit the model on the training data
+log_model.fit(X_train, y_train)
+
+# Make predictions on the testing data
+y_pred = log_model.predict(X_test)
+
+# Calculate confusion matrix
+log_cm_all = confusion_matrix(y_test, y_pred)
+
+# Plotting the confusion matrix with seaborn heatmap
+plt.figure(figsize=(10, 7))
+sns.heatmap(log_cm_all, annot=True, fmt='d', cmap='YlGnBu')  # `fmt='d'` means decimal formatting
+plt.title('Confusion Matrix: Logistic Regression with All Variables')
+plt.ylabel('True Label')
+plt.xlabel('Predicted Label')
+plt.show()
+```
+
+```{python}
+#| label: Logistic - confusion_matrix (scaled)
+
+# Fit the model on scaled training data
+log_model.fit(X_train_scaled_cardio, y_train)
+
+# Make predictions on the scaled testing data
+y_pred = log_model.predict(X_test_scaled_cardio)
+
+# Calculate confusion matrix for scaled data
+log_cm_scaled = confusion_matrix(y_test, y_pred)
+
+# Plotting the confusion matrix with seaborn heatmap
+plt.figure(figsize=(10, 7))
+sns.heatmap(log_cm_scaled, annot=True, fmt='d', cmap='YlGnBu')  # `fmt='d'` means decimal formatting
+plt.title('Confusion Matrix: Logistic Regression with Scaled Data')
+plt.ylabel('True Label')
+plt.xlabel('Predicted Label')
+plt.show()
+```
+
+```{python}
+#| label: Logistic - confusion_matrix (feature selection)
+
+# Fit the model on the kbest training data
+log_model.fit(X_train_fs_cardio, y_train)
+
+# Make predictions on the kbest testing data
+y_pred = log_model.predict(X_test_fs_cardio)
+
+# Calculate confusion matrix for kbest data
+log_cm_fs = confusion_matrix(y_test, y_pred)
+
+# Plotting the confusion matrix with seaborn heatmap
+plt.figure(figsize=(10, 7))
+sns.heatmap(log_cm_fs, annot=True, fmt='d', cmap='YlGnBu')  # `fmt='d'` means decimal formatting
+plt.title('Confusion Matrix: Logistic Regression with Feature Selection')
+plt.ylabel('True Label')
+plt.xlabel('Predicted Label')
+plt.show()
+```
+
+```{python}
+#| label: Logistic - confusion_matrix (scaled feature selection)
+
+# Fit the model on the kbest training data
+log_model.fit(X_train_fs_cardio, y_train)
+
+# Make predictions on the kbest testing data
+y_pred = log_model.predict(X_test_fs_cardio)
+
+# Calculate confusion matrix for kbest data
+log_cm_fs_scaled = confusion_matrix(y_test, y_pred)
+
+# Plotting the confusion matrix with seaborn heatmap
+plt.figure(figsize=(10, 7))
+sns.heatmap(log_cm_fs_scaled, annot=True, fmt='d', cmap='YlGnBu')  # `fmt='d'` means decimal formatting
+plt.title('Confusion Matrix: Logistic Regression with Scaled Feature Selection')
+plt.ylabel('True Label')
+plt.xlabel('Predicted Label')
+plt.show()
+```
+
+### Decision Tree
+
+#### Decision Tree with All Variables
+```{python}
+#| label: decision tree with all variables
+
+# Start timing
+start_time = time.time()
+
+# Initialize Decision Tree model
+dt_clf = DecisionTreeClassifier()
+
+# Fit the model on the training data
+dt_clf.fit(X_train, y_train)
+
+# Make predictions on the testing data
+y_pred = dt_clf.predict(X_test)
+
+# Calculate performance metrics
+accuracy = accuracy_score(y_test, y_pred)
+precision = precision_score(y_test, y_pred)
+recall = recall_score(y_test, y_pred)
+f1 = f1_score(y_test, y_pred)
+auc = roc_auc_score(y_test, y_pred)
+
+# Calculate computational time
+end_time = time.time()
+computational_time = end_time - start_time
+
+# Create a new row as a DataFrame to append
+new_row = pd.DataFrame([{
+    'Model': 'Decision Tree with All Variables',
+    'Accuracy': accuracy,
+    'Precision': precision,
+    'Recall': recall,
+    'F1-score': f1,
+    'ROC AUC Score': auc,
+    'Computational Time': computational_time
+}])
+
+# Append the new row using pd.concat
+results_cardio = pd.concat([results_cardio, new_row], ignore_index=True)
+
+results_cardio
+```
+
+#### Decision Tree with Scaled Data
+```{python}
+#| label: decision tree with scaled data
+
+# Start timing
+start_time = time.time()
+
+# Fit the model on the scaled training data
+dt_clf.fit(X_train_scaled_cardio, y_train)
+
+# Make predictions on the scaled testing data
+y_pred_dt = dt_clf.predict(X_test_scaled_cardio)
+
+# Calculate performance metrics
+accuracy = accuracy_score(y_test, y_pred)
+precision = precision_score(y_test, y_pred)
+recall = recall_score(y_test, y_pred)
+f1 = f1_score(y_test, y_pred)
+auc = roc_auc_score(y_test, y_pred)
+
+# Calculate computational time
+end_time = time.time()
+computational_time = end_time - start_time
+
+# Create a new row as a DataFrame to append
+new_row = pd.DataFrame([{
+    'Model': 'Decision Tree with Scaled Data',
+    'Accuracy': accuracy,
+    'Precision': precision,
+    'Recall': recall,
+    'F1-score': f1,
+    'ROC AUC Score': auc,
+    'Computational Time': computational_time
+}])
+
+# Append the new row using pd.concat
+results_cardio = pd.concat([results_cardio, new_row], ignore_index=True)
+
+results_cardio
+```
+
+#### Decision Tree with Feature Selection
+```{python}
+#| label: decision tree with feature selection
+
+# Start timing
+start_time = time.time()
+
+# Fit the model on the kbest training data
+dt_clf.fit(X_train_fs_cardio, y_train)
+
+# Make predictions on the kbest testing data
+y_pred = dt_clf.predict(X_test_fs_cardio)
+
+# Calculate performance metrics
+accuracy = accuracy_score(y_test, y_pred)
+precision = precision_score(y_test, y_pred)
+recall = recall_score(y_test, y_pred)
+f1 = f1_score(y_test, y_pred)
+auc = roc_auc_score(y_test, y_pred)
+
+# Calculate computational time
+end_time = time.time()
+computational_time = end_time - start_time
+
+# Create a new row as a DataFrame to append
+new_row = pd.DataFrame([{
+    'Model': 'Decision Tree with Feature Selection',
+    'Accuracy': accuracy,
+    'Precision': precision,
+    'Recall': recall,
+    'F1-score': f1,
+    'ROC AUC Score': auc,
+    'Computational Time': computational_time
+}])
+
+# Append the new row using pd.concat
+results_cardio = pd.concat([results_cardio, new_row], ignore_index=True)
+
+results_cardio
+```
+
+#### Decision Tree with Scaled Feature Selection
+```{python}
+#| label: decision tree with feature selection
+
+# Start timing
+start_time = time.time()
+
+# Fit the model on the kbest training data
+dt_clf.fit(X_train_fs_scaled_cardio, y_train)
+
+# Make predictions on the kbest testing data
+y_pred = dt_clf.predict(X_test_fs_scaled_cardio)
+
+# Calculate performance metrics
+accuracy = accuracy_score(y_test, y_pred)
+precision = precision_score(y_test, y_pred)
+recall = recall_score(y_test, y_pred)
+f1 = f1_score(y_test, y_pred)
+auc = roc_auc_score(y_test, y_pred)
+
+# Calculate computational time
+end_time = time.time()
+computational_time = end_time - start_time
+
+# Create a new row as a DataFrame to append
+new_row = pd.DataFrame([{
+    'Model': 'Decision Tree with Scaled Feature Selection',
+    'Accuracy': accuracy,
+    'Precision': precision,
+    'Recall': recall,
+    'F1-score': f1,
+    'ROC AUC Score': auc,
+    'Computational Time': computational_time
+}])
+
+# Append the new row using pd.concat
+results_cardio = pd.concat([results_cardio, new_row], ignore_index=True)
+
+results_cardio
+```
+
+#### Decision Tree with Resampling
+```{python}
+#| label: Decision Tree with resampling
+
+# Start timing
+start_time = time.time()
+
+# Fit the model on the kbest training data 
+dt_clf.fit(X_train_ds, y_train_ds)
+
+# Make predictions on the kbest testing data
+y_pred_ds = dt_clf.predict(X_test_ds)
+
+# Calculate performance metrics
+accuracy = accuracy_score(y_test_ds, y_pred_ds)
+precision = precision_score(y_test_ds, y_pred_ds)
+recall = recall_score(y_test_ds, y_pred_ds)
+f1 = f1_score(y_test_ds, y_pred_ds)
+auc = roc_auc_score(y_test_ds, y_pred_ds)
+
+# Calculate computational time
+end_time = time.time()
+computational_time = end_time - start_time
+
+# Create a new row as a DataFrame to append
+new_row = pd.DataFrame([{
+    'Model': 'Decision Tree with Resampling',
+    'Accuracy': accuracy,
+    'Precision': precision,
+    'Recall': recall,
+    'F1-score': f1,
+    'ROC AUC Score': auc,
+    'Computational Time': computational_time
+}])
+
+# Append the new row using pd.concat
+results_cardio = pd.concat([results_cardio, new_row], ignore_index=True)
+
+results_cardio
+```
+
+#### Decision Tree Comparison with Confusion Matrix
+```{python}
+#| label: Decision Tree - confusion_matrix (all)
+
+# Fit the model on the training data
+dt_clf.fit(X_train, y_train)
+
+# Make predictions on the testing data
+y_pred = dt_clf.predict(X_test)
+
+# Calculate confusion matrix
+dt_cm_all = confusion_matrix(y_test, y_pred)
+
+# Plotting the confusion matrix with seaborn heatmap
+plt.figure(figsize=(10, 7))
+sns.heatmap(dt_cm_all, annot=True, fmt='d', cmap='YlGnBu')  # `fmt='d'` means decimal formatting
+plt.title('Confusion Matrix: Decision Tree with All Variables')
+plt.ylabel('True Label')
+plt.xlabel('Predicted Label')
+plt.show()
+```
+
+```{python}
+#| label: Decision Tree - confusion_matrix (scaled)
+
+# Fit the model on the scaled training data
+dt_clf.fit(X_train_scaled_cardio, y_train)
+
+# Make predictions on the scaled testing data
+y_pred = dt_clf.predict(X_test_scaled_cardio)
+
+# Calculate confusion matrix for scaled data
+dt_cm_scaled = confusion_matrix(y_test, y_pred)
+
+# Plotting the confusion matrix with seaborn heatmap
+plt.figure(figsize=(10, 7))
+sns.heatmap(dt_cm_scaled, annot=True, fmt='d', cmap='YlGnBu')  # `fmt='d'` means decimal formatting
+plt.title('Confusion Matrix: Decision Tree with Scaled Data')
+plt.ylabel('True Label')
+plt.xlabel('Predicted Label')
+plt.show()
+```
+
+```{python}
+#| label: Decision Tree - confusion_matrix (feature selection)
+
+# Fit the model on the kbest training data
+dt_clf.fit(X_train_fs_cardio, y_train)
+
+# Make predictions on the kbest testing data
+y_pred = dt_clf.predict(X_test_fs_cardio)
+
+# Calculate confusion matrix for kbest data
+dt_cm_fs = confusion_matrix(y_test, y_pred)
+
+# Plotting the confusion matrix with seaborn heatmap
+plt.figure(figsize=(10, 7))
+sns.heatmap(dt_cm_fs, annot=True, fmt='d', cmap='YlGnBu')  # `fmt='d'` means decimal formatting
+plt.title('Confusion Matrix: Decision Tree with Feature Selection')
+plt.ylabel('True Label')
+plt.xlabel('Predicted Label')
+plt.show()
+```
+
+```{python}
+#| label: Decision Tree - confusion_matrix (scaled feature selection)
+
+# Fit the model on the kbest training data
+dt_clf.fit(X_train_fs_scaled_cardio, y_train)
+
+# Make predictions on the kbest testing data
+y_pred = dt_clf.predict(X_test_fs_scaled_cardio)
+
+# Calculate confusion matrix for kbest data
+dt_cm_fs_scaled = confusion_matrix(y_test, y_pred)
+
+# Plotting the confusion matrix with seaborn heatmap
+plt.figure(figsize=(10, 7))
+sns.heatmap(dt_cm_fs_scaled, annot=True, fmt='d', cmap='YlGnBu')  # `fmt='d'` means decimal formatting
+plt.title('Confusion Matrix: Decision Tree with Scaled Feature Selection')
+plt.ylabel('True Label')
+plt.xlabel('Predicted Label')
+plt.show()
+```
+
+### Random Forest
+
+#### Random Forest with All Variables
+```{python}
+#| label: random forest with all variables
+
+# Starting time
+start_time = time.time()
+
+# Initialize Random Forest model
+model_rf = RandomForestClassifier()
+
+# Fit the model on the training data
+model_rf.fit(X_train, y_train)
+
+# Make predictions on the testing data
+y_pred = model_rf.predict(X_test)
+
+# Calculate performance metrics
+accuracy = accuracy_score(y_test, y_pred)
+precision = precision_score(y_test, y_pred)
+recall = recall_score(y_test, y_pred)
+f1 = f1_score(y_test, y_pred)
+auc = roc_auc_score(y_test, y_pred)
+
+# Calculate computational time
+end_time = time.time()
+computational_time = end_time - start_time
+
+# Create a new row as a DataFrame to append
+new_row = pd.DataFrame([{
+    'Model': 'Random Forest with All Variables',
+    'Accuracy': accuracy,
+    'Precision': precision,
+    'Recall': recall,
+    'F1-score': f1,
+    'ROC AUC Score': auc,
+    'Computational Time': computational_time
+}])
+
+# Append the new row using pd.concat
+results_cardio = pd.concat([results_cardio, new_row], ignore_index=True)
+
+results_cardio
+```
+
+#### Random Forest with Scaled Data
+```{python}
+#| label: random forest with scaled data
+
+# Start timing
+start_time = time.time()
+
+# Fit the model on the scaled training data
+model_rf.fit(X_train_scaled_cardio, y_train)
+
+# Make predictions on the scaled testing data
+y_pred = model_rf.predict(X_test_scaled_cardio)
+
+# Calculate performance metrics
+accuracy = accuracy_score(y_test, y_pred)
+precision = precision_score(y_test, y_pred)
+recall = recall_score(y_test, y_pred)
+f1 = f1_score(y_test, y_pred)
+auc = roc_auc_score(y_test, y_pred)
+
+# Calculate computational time
+end_time = time.time()
+computational_time = end_time - start_time
+
+# Create a new row as a DataFrame to append
+new_row = pd.DataFrame([{
+    'Model': 'Random Forest with Scaled Data',
+    'Accuracy': accuracy,
+    'Precision': precision,
+    'Recall': recall,
+    'F1-score': f1,
+    'ROC AUC Score': auc,
+    'Computational Time': computational_time
+}])
+
+# Append the new row using pd.concat
+results_cardio = pd.concat([results_cardio, new_row], ignore_index=True)
+
+results_cardio
+```
+
+#### Random Forest with Feature Selection
+```{python}
+#| label: random forest with feature selection
+
+# Starting time
+start_time = time.time()
+
+# Fit the model on the kbest training data
+model_rf.fit(X_train_fs_cardio, y_train)
+
+# Make predictions on the kbest testing data
+y_pred = model_rf.predict(X_test_fs_cardio)
+
+# Calculate performance metrics
+accuracy = accuracy_score(y_test, y_pred)
+precision = precision_score(y_test, y_pred)
+recall = recall_score(y_test, y_pred)
+f1 = f1_score(y_test, y_pred)
+auc = roc_auc_score(y_test, y_pred)
+
+# Calculate computational time
+end_time = time.time()
+computational_time = end_time - start_time
+
+# Create a new row as a DataFrame to append
+new_row = pd.DataFrame([{
+    'Model': 'Random Forest with Feature Selection',
+    'Accuracy': accuracy,
+    'Precision': precision,
+    'Recall': recall,
+    'F1-score': f1,
+    'ROC AUC Score': auc,
+    'Computational Time': computational_time
+}])
+
+# Append the new row using pd.concat
+results_cardio = pd.concat([results_cardio, new_row], ignore_index=True)
+
+results_cardio
+```
+
+#### Random Forest with Scaled Feature Selection
+```{python}
+#| label: random forest with scaled feature selection
+
+# Starting time
+start_time = time.time()
+
+# Fit the model on the kbest training data
+model_rf.fit(X_train_fs_scaled_cardio, y_train)
+
+# Make predictions on the kbest testing data
+y_pred = model_rf.predict(X_test_fs_scaled_cardio)
+
+# Calculate performance metrics
+accuracy = accuracy_score(y_test, y_pred)
+precision = precision_score(y_test, y_pred)
+recall = recall_score(y_test, y_pred)
+f1 = f1_score(y_test, y_pred)
+auc = roc_auc_score(y_test, y_pred)
+
+# Calculate computational time
+end_time = time.time()
+computational_time = end_time - start_time
+
+# Create a new row as a DataFrame to append
+new_row = pd.DataFrame([{
+    'Model': 'Random Forest with Scaled Feature Selection',
+    'Accuracy': accuracy,
+    'Precision': precision,
+    'Recall': recall,
+    'F1-score': f1,
+    'ROC AUC Score': auc,
+    'Computational Time': computational_time
+}])
+
+# Append the new row using pd.concat
+results_cardio = pd.concat([results_cardio, new_row], ignore_index=True)
+
+results_cardio
+```
+
+#### Random Forest with Resampling
+```{python}
+#| label: Random Forest with resampling
+
+# Start timing
+start_time = time.time()
+
+# Fit the model on the kbest training data 
+model_rf.fit(X_train_ds, y_train_ds)
+
+# Make predictions on the kbest testing data
+y_pred_ds = model_rf.predict(X_test_ds)
+
+# Calculate performance metrics
+accuracy = accuracy_score(y_test_ds, y_pred_ds)
+precision = precision_score(y_test_ds, y_pred_ds)
+recall = recall_score(y_test_ds, y_pred_ds)
+f1 = f1_score(y_test_ds, y_pred_ds)
+auc = roc_auc_score(y_test_ds, y_pred_ds)
+
+# Calculate computational time
+end_time = time.time()
+computational_time = end_time - start_time
+
+# Create a new row as a DataFrame to append
+new_row = pd.DataFrame([{
+    'Model': 'Random Forest with Resampling',
+    'Accuracy': accuracy,
+    'Precision': precision,
+    'Recall': recall,
+    'F1-score': f1,
+    'ROC AUC Score': auc,
+    'Computational Time': computational_time
+}])
+
+# Append the new row using pd.concat
+results_cardio = pd.concat([results_cardio, new_row], ignore_index=True)
+
+results_cardio
+```
+
+#### Random Forest Comparison with Confusion Matrix
+```{python}
+#| label: Random Forest - confusion_matrix (all)
+
+# Fit the model on the training data
+model_rf.fit(X_train, y_train)
+
+# Make predictions on the testing data
+y_pred = model_rf.predict(X_test)
+
+# Calculate confusion matrix
+rf_cm_all = confusion_matrix(y_test, y_pred)
+
+# Plotting the confusion matrix with seaborn heatmap
+plt.figure(figsize=(10, 7))
+sns.heatmap(rf_cm_all, annot=True, fmt='d', cmap='YlGnBu')  # `fmt='d'` means decimal formatting
+plt.title('Confusion Matrix: Random Forest with All Variables')
+plt.ylabel('True Label')
+plt.xlabel('Predicted Label')
+plt.show()
+```
+
+```{python}
+#| label: Random Forest - confusion_matrix (scaled)
+
+# Fit the model on the scaled training data
+model_rf.fit(X_train_scaled_cardio, y_train)
+
+# Make predictions on the scaled testing data
+y_pred = model_rf.predict(X_test_scaled_cardio)
+
+# Calculate confusion matrix for scaled data
+rf_cm_scaled = confusion_matrix(y_test, y_pred)
+
+# Plotting the confusion matrix with seaborn heatmap
+plt.figure(figsize=(10, 7))
+sns.heatmap(rf_cm_scaled, annot=True, fmt='d', cmap='YlGnBu')  # `fmt='d'` means decimal formatting
+plt.title('Confusion Matrix: Random Forest with Scaled Data')
+plt.ylabel('True Label')
+plt.xlabel('Predicted Label')
+plt.show()
+```
+
+```{python}
+#| label: Random Forest - confusion_matrix (feature selection)
+
+# Fit the model on the kbest training data
+model_rf.fit(X_train_fs_cardio, y_train)
+
+# Make predictions on the kbest testing data
+y_pred = model_rf.predict(X_test_fs_cardio)
+
+# Calculate confusion matrix for kbest data
+rf_cm_fs = confusion_matrix(y_test, y_pred)
+
+# Plotting the confusion matrix with seaborn heatmap
+plt.figure(figsize=(10, 7))
+sns.heatmap(rf_cm_fs, annot=True, fmt='d', cmap='YlGnBu')  # `fmt='d'` means decimal formatting
+plt.title('Confusion Matrix: Random Forest with Feature Selection')
+plt.ylabel('True Label')
+plt.xlabel('Predicted Label')
+plt.show()
+```
+
+```{python}
+#| label: Random Forest - confusion_matrix (scaled feature selection)
+
+# Fit the model on the kbest training data
+model_rf.fit(X_train_fs_scaled_cardio, y_train)
+
+# Make predictions on the kbest testing data
+y_pred = model_rf.predict(X_test_fs_scaled_cardio)
+
+# Calculate confusion matrix for kbest data
+rf_cm_fs_scaled = confusion_matrix(y_test, y_pred)
+
+# Plotting the confusion matrix with seaborn heatmap
+plt.figure(figsize=(10, 7))
+sns.heatmap(rf_cm_fs_scaled, annot=True, fmt='d', cmap='YlGnBu')  # `fmt='d'` means decimal formatting
+plt.title('Confusion Matrix: Random Forest with Scaled Feature Selection')
+plt.ylabel('True Label')
+plt.xlabel('Predicted Label')
+plt.show()
+```
+
+### Gradient Boosting
+
+#### Gradient Boosting with All Variables
+```{python}
+#| label: Gradient Boosting with all variables
+
+# Starting time
+start_time = time.time()
+
+# Initialize gradient boosting model
+gb_classifier = GradientBoostingClassifier()
+
+# Fit the model on the training data
+gb_classifier.fit(X_train, y_train)
+
+# Make predictions on the testing data
+y_pred = gb_classifier.predict(X_test)
+
+# Calculate performance metrics
+accuracy = accuracy_score(y_test, y_pred)
+precision = precision_score(y_test, y_pred)
+recall = recall_score(y_test, y_pred)
+f1 = f1_score(y_test, y_pred)
+auc = roc_auc_score(y_test, y_pred)
+
+# Calculate computational time
+end_time = time.time()
+computational_time = end_time - start_time
+
+# Create a new row as a DataFrame to append
+new_row = pd.DataFrame([{
+    'Model': 'Gradient Boosting with All Variables',
+    'Accuracy': accuracy,
+    'Precision': precision,
+    'Recall': recall,
+    'F1-score': f1,
+    'ROC AUC Score': auc,
+    'Computational Time': computational_time
+}])
+
+# Append the new row using pd.concat
+results_cardio = pd.concat([results_cardio, new_row], ignore_index=True)
+
+results_cardio
+```
+
+#### Gradient Boosting with Scaled Data
+```{python}
+#| label: Gradient Boosting with scaled data
+
+# Start timing
+start_time = time.time()
+
+# Fit the model on the scaled training data
+gb_classifier.fit(X_train_scaled_cardio, y_train)
+
+# Make predictions on the scaled testing data
+y_pred = gb_classifier.predict(X_test_scaled_cardio)
+
+# Calculate performance metrics
+accuracy = accuracy_score(y_test, y_pred)
+precision = precision_score(y_test, y_pred)
+recall = recall_score(y_test, y_pred)
+f1 = f1_score(y_test, y_pred)
+auc = roc_auc_score(y_test, y_pred)
+
+# Calculate computational time
+end_time = time.time()
+computational_time = end_time - start_time
+
+# Create a new row as a DataFrame to append
+new_row = pd.DataFrame([{
+    'Model': 'Gradient Boosting with Scaled Data',
+    'Accuracy': accuracy,
+    'Precision': precision,
+    'Recall': recall,
+    'F1-score': f1,
+    'ROC AUC Score': auc,
+    'Computational Time': computational_time
+}])
+
+# Append the new row using pd.concat
+results_cardio = pd.concat([results_cardio, new_row], ignore_index=True)
+
+results_cardio
+```
+
+#### Gradient Boosting with Feature Selection
+```{python}
+#| label: Gradient Boosting with feature selection
+
+# Starting time
+start_time = time.time()
+
+# Fit the model on the kbest training data
+gb_classifier.fit(X_train_fs_cardio, y_train)
+
+# Make predictions on the kbest testing data
+y_pred = gb_classifier.predict(X_test_fs_cardio)
+
+# Calculate performance metrics
+accuracy = accuracy_score(y_test, y_pred)
+precision = precision_score(y_test, y_pred)
+recall = recall_score(y_test, y_pred)
+f1 = f1_score(y_test, y_pred)
+auc = roc_auc_score(y_test, y_pred)
+
+# Calculate computational time
+end_time = time.time()
+computational_time = end_time - start_time
+
+# Create a new row as a DataFrame to append
+new_row = pd.DataFrame([{
+    'Model': 'Gradient Boosting with Feature Selection',
+    'Accuracy': accuracy,
+    'Precision': precision,
+    'Recall': recall,
+    'F1-score': f1,
+    'ROC AUC Score': auc,
+    'Computational Time': computational_time
+}])
+
+# Append the new row using pd.concat
+results_cardio = pd.concat([results_cardio, new_row], ignore_index=True)
+
+results_cardio
+```
+
+#### Gradient Boosting with Scaled Feature Selection
+```{python}
+#| label: Gradient Boosting with scaled feature selection
+
+# Starting time
+start_time = time.time()
+
+# Fit the model on the kbest training data
+gb_classifier.fit(X_train_fs_scaled_cardio, y_train)
+
+# Make predictions on the kbest testing data
+y_pred = gb_classifier.predict(X_test_fs_scaled_cardio)
+
+# Calculate performance metrics
+accuracy = accuracy_score(y_test, y_pred)
+precision = precision_score(y_test, y_pred)
+recall = recall_score(y_test, y_pred)
+f1 = f1_score(y_test, y_pred)
+auc = roc_auc_score(y_test, y_pred)
+
+# Calculate computational time
+end_time = time.time()
+computational_time = end_time - start_time
+
+# Create a new row as a DataFrame to append
+new_row = pd.DataFrame([{
+    'Model': 'Gradient Boosting with Scaled Feature Selection',
+    'Accuracy': accuracy,
+    'Precision': precision,
+    'Recall': recall,
+    'F1-score': f1,
+    'ROC AUC Score': auc,
+    'Computational Time': computational_time
+}])
+
+# Append the new row using pd.concat
+results_cardio = pd.concat([results_cardio, new_row], ignore_index=True)
+
+results_cardio
+```
+
+#### Gradient Boosting with Resampling
+```{python}
+#| label: Gradient Boosting with resampling
+
+# Start timing
+start_time = time.time()
+
+# Fit the model on the kbest training data 
+gb_classifier.fit(X_train_ds, y_train_ds)
+
+# Make predictions on the kbest testing data
+y_pred_ds = gb_classifier.predict(X_test_ds)
+
+# Calculate performance metrics
+accuracy = accuracy_score(y_test_ds, y_pred_ds)
+precision = precision_score(y_test_ds, y_pred_ds)
+recall = recall_score(y_test_ds, y_pred_ds)
+f1 = f1_score(y_test_ds, y_pred_ds)
+auc = roc_auc_score(y_test_ds, y_pred_ds)
+
+# Calculate computational time
+end_time = time.time()
+computational_time = end_time - start_time
+
+# Create a new row as a DataFrame to append
+new_row = pd.DataFrame([{
+    'Model': 'Gradient Boosting with Resampling',
+    'Accuracy': accuracy,
+    'Precision': precision,
+    'Recall': recall,
+    'F1-score': f1,
+    'ROC AUC Score': auc,
+    'Computational Time': computational_time
+}])
+
+# Append the new row using pd.concat
+results_cardio = pd.concat([results_cardio, new_row], ignore_index=True)
+
+results_cardio
+```
+
+#### Gradient Boosting Comparison with Confusion Matrix
+```{python}
+#| label: Gradient Boosting - confusion_matrix (all)
+
+# Fit the model on the training data
+gb_classifier.fit(X_train, y_train)
+
+# Make predictions on the testing data
+y_pred = gb_classifier.predict(X_test)
+
+# Calculate confusion matrix
+gb_cm_all = confusion_matrix(y_test, y_pred)
+
+# Plotting the confusion matrix with seaborn heatmap
+plt.figure(figsize=(10, 7))
+sns.heatmap(gb_cm_all, annot=True, fmt='d', cmap='YlGnBu')  # `fmt='d'` means decimal formatting
+plt.title('Confusion Matrix: Gradient Boosting with All Variables')
+plt.ylabel('True Label')
+plt.xlabel('Predicted Label')
+plt.show()
+```
+
+```{python}
+#| label: Gradient Boosting - confusion_matrix (scaled)
+
+# Fit the model on the scaled training data
+gb_classifier.fit(X_train_scaled_cardio, y_train)
+
+# Make predictions on the scaled testing data
+y_pred = gb_classifier.predict(X_test_scaled_cardio)
+
+# Calculate confusion matrix for scaled data
+gb_cm_scaled = confusion_matrix(y_test, y_pred)
+
+# Plotting the confusion matrix with seaborn heatmap
+plt.figure(figsize=(10, 7))
+sns.heatmap(gb_cm_scaled, annot=True, fmt='d', cmap='YlGnBu')  # `fmt='d'` means decimal formatting
+plt.title('Confusion Matrix: Gradient Boosting with Scaled Data')
+plt.ylabel('True Label')
+plt.xlabel('Predicted Label')
+plt.show()
+```
+
+```{python}
+#| label: Gradient Boosting - confusion_matrix (feature selection)
+
+# Fit the model on the scaled training data
+gb_classifier.fit(X_train_fs_cardio, y_train)
+
+# Make predictions on the kbest test data
+y_pred = gb_classifier.predict(X_test_fs_cardio)
+
+# Calculate confusion matrix for kbest data
+gb_cm_fs = confusion_matrix(y_test, y_pred)
+
+# Plotting the confusion matrix with seaborn heatmap
+plt.figure(figsize=(10, 7))
+sns.heatmap(gb_cm_fs, annot=True, fmt='d', cmap='YlGnBu')  # `fmt='d'` means decimal formatting
+plt.title('Confusion Matrix: Gradient Boosting with Feature Selection')
+plt.ylabel('True Label')
+plt.xlabel('Predicted Label')
+plt.show()
+```
+
+```{python}
+#| label: Gradient Boosting - confusion_matrix (scaled feature selection)
+
+# Fit the model on the scaled training data
+gb_classifier.fit(X_train_fs_scaled_cardio, y_train)
+
+# Make predictions on the kbest test data
+y_pred = gb_classifier.predict(X_test_fs_scaled_cardio)
+
+# Calculate confusion matrix for kbest data
+gb_cm_fs_scaled = confusion_matrix(y_test, y_pred)
+
+# Plotting the confusion matrix with seaborn heatmap
+plt.figure(figsize=(10, 7))
+sns.heatmap(gb_cm_fs_scaled, annot=True, fmt='d', cmap='YlGnBu')  # `fmt='d'` means decimal formatting
+plt.title('Confusion Matrix: Gradient Boosting with Scaled Feature Selection')
+plt.ylabel('True Label')
+plt.xlabel('Predicted Label')
+plt.show()
+```
+
+### KNeighbors Classification
+
+#### KNeighbors with All Variables
+```{python}
+#| label: KNeighbors with all variables
+
+X_test = np.array(X_test)
+
+# Starting time
+start_time = time.time()
+
+# Initialize K-Nearest Neighbors Classifier
+knn_classifier = KNeighborsClassifier()
+
+# Fit the model on the training data
+knn_classifier.fit(X_train, y_train)
+
+# Make predictions on the testing data
+y_pred = knn_classifier.predict(X_test)
+
+# Calculate performance metrics
+accuracy = accuracy_score(y_test, y_pred)
+precision = precision_score(y_test, y_pred)
+recall = recall_score(y_test, y_pred)
+f1 = f1_score(y_test, y_pred)
+auc = roc_auc_score(y_test, y_pred)
+
+# Calculate computational time
+end_time = time.time()
+computational_time = end_time - start_time
+
+# Create a new row as a DataFrame to append
+new_row = pd.DataFrame([{
+    'Model': 'KNeighbors with All Variables',
+    'Accuracy': accuracy,
+    'Precision': precision,
+    'Recall': recall,
+    'F1-score': f1,
+    'ROC AUC Score': auc,
+    'Computational Time': computational_time
+}])
+
+# Append the new row using pd.concat
+results_cardio = pd.concat([results_cardio, new_row], ignore_index=True)
+
+results_cardio
+```
+
+#### KNeighbors with Scaled Data
+```{python}
+#| label: KNeighbors with scaled data
+
+X_test_scaled_cardio = np.array(X_test_scaled_cardio)
+
+# Start timing
+start_time = time.time()
+
+# Fit the model on the scaled training data
+knn_classifier.fit(X_train_scaled_cardio, y_train)
+
+# Make predictions on the scaled testing data
+y_pred = knn_classifier.predict(X_test_scaled_cardio)
+
+# Calculate performance metrics
+accuracy = accuracy_score(y_test, y_pred)
+precision = precision_score(y_test, y_pred)
+recall = recall_score(y_test, y_pred)
+f1 = f1_score(y_test, y_pred)
+auc = roc_auc_score(y_test, y_pred)
+
+# Calculate computational time
+end_time = time.time()
+computational_time = end_time - start_time
+
+# Create a new row as a DataFrame to append
+new_row = pd.DataFrame([{
+    'Model': 'KNeighbors with Scaled Data',
+    'Accuracy': accuracy,
+    'Precision': precision,
+    'Recall': recall,
+    'F1-score': f1,
+    'ROC AUC Score': auc,
+    'Computational Time': computational_time
+}])
+
+# Append the new row using pd.concat
+results_cardio = pd.concat([results_cardio, new_row], ignore_index=True)
+
+results_cardio
+```
+
+#### KNeighbors with Feature Selection
+```{python}
+#| label: KNeighbors with feature selection
+
+X_test_fs_cardio = np.array(X_test_fs_cardio)
+
+# Start timing
+start_time = time.time()
+
+# Fit the model on the scaled training data
+knn_classifier.fit(X_train_fs_cardio, y_train)
+
+# Make predictions on the scaled test data
+y_pred = knn_classifier.predict(X_test_fs_cardio)
+
+# Calculate performance metrics
+accuracy = accuracy_score(y_test, y_pred)
+precision = precision_score(y_test, y_pred)
+recall = recall_score(y_test, y_pred)
+f1 = f1_score(y_test, y_pred)
+auc = roc_auc_score(y_test, y_pred)
+
+# Calculate computational time
+end_time = time.time()
+computational_time = end_time - start_time
+
+# Create a new row as a DataFrame to append
+new_row = pd.DataFrame([{
+    'Model': 'KNeighbors with Feature Selection',
+    'Accuracy': accuracy,
+    'Precision': precision,
+    'Recall': recall,
+    'F1-score': f1,
+    'ROC AUC Score': auc,
+    'Computational Time': computational_time
+}])
+
+# Append the new row using pd.concat
+results_cardio = pd.concat([results_cardio, new_row], ignore_index=True)
+
+results_cardio
+```
+
+#### KNeighbors with Scaled Feature Selection
+```{python}
+#| label: KNeighbors with scaled feature selection
+
+X_test_fs_scaled_cardio = np.array(X_test_fs_scaled_cardio)
+
+# Start timing
+start_time = time.time()
+
+# Fit the model on the scaled training data
+knn_classifier.fit(X_train_fs_scaled_cardio, y_train)
+
+# Make predictions on the scaled test data
+y_pred = knn_classifier.predict(X_test_fs_scaled_cardio)
+
+# Calculate performance metrics
+accuracy = accuracy_score(y_test, y_pred)
+precision = precision_score(y_test, y_pred)
+recall = recall_score(y_test, y_pred)
+f1 = f1_score(y_test, y_pred)
+auc = roc_auc_score(y_test, y_pred)
+
+# Calculate computational time
+end_time = time.time()
+computational_time = end_time - start_time
+
+# Create a new row as a DataFrame to append
+new_row = pd.DataFrame([{
+    'Model': 'KNeighbors with Scaled Feature Selection',
+    'Accuracy': accuracy,
+    'Precision': precision,
+    'Recall': recall,
+    'F1-score': f1,
+    'ROC AUC Score': auc,
+    'Computational Time': computational_time
+}])
+
+# Append the new row using pd.concat
+results_cardio = pd.concat([results_cardio, new_row], ignore_index=True)
+
+results_cardio
+```
+
+#### KNeighbor with Resampling
+```{python}
+#| label: KNeighbor with resampling
+X_test_ds = np.array(X_test_ds)
+
+# Start timing
+start_time = time.time()
+
+# Fit the model on the kbest training data 
+knn_classifier.fit(X_train_ds, y_train_ds)
+
+# Make predictions on the kbest testing data
+y_pred_ds = knn_classifier.predict(X_test_ds)
+
+# Calculate performance metrics
+accuracy = accuracy_score(y_test_ds, y_pred_ds)
+precision = precision_score(y_test_ds, y_pred_ds)
+recall = recall_score(y_test_ds, y_pred_ds)
+f1 = f1_score(y_test_ds, y_pred_ds)
+auc = roc_auc_score(y_test_ds, y_pred_ds)
+
+# Calculate computational time
+end_time = time.time()
+computational_time = end_time - start_time
+
+# Create a new row as a DataFrame to append
+new_row = pd.DataFrame([{
+    'Model': 'KNeighbor with Resampling',
+    'Accuracy': accuracy,
+    'Precision': precision,
+    'Recall': recall,
+    'F1-score': f1,
+    'ROC AUC Score': auc,
+    'Computational Time': computational_time
+}])
+
+# Append the new row using pd.concat
+results_cardio = pd.concat([results_cardio, new_row], ignore_index=True)
+
+results_cardio
+```
+
+#### KNeighbors Comparison with Confusion Matrix
+```{python}
+#| label: KNeighbors - confusion_matrix (all)
+
+# Fit the model on the training data
+knn_classifier.fit(X_train, y_train)
+
+# Make predictions on the testing data
+y_pred = knn_classifier.predict(X_test)
+
+# Calculate confusion matrix
+knn_cm_all = confusion_matrix(y_test, y_pred)
+
+# Plotting the confusion matrix with seaborn heatmap
+plt.figure(figsize=(10, 7))
+sns.heatmap(knn_cm_all, annot=True, fmt='d', cmap='YlGnBu')  # `fmt='d'` means decimal formatting
+plt.title('Confusion Matrix: KNeighbors with All Variables')
+plt.ylabel('True Label')
+plt.xlabel('Predicted Label')
+plt.show()
+```
+
+```{python}
+#| label: KNeighbors - confusion_matrix (scaled)
+
+# Fit the model on the scaled training data
+knn_classifier.fit(X_train_scaled_cardio, y_train)
+
+# Make predictions on the scaled testing data
+y_pred = knn_classifier.predict(X_test_scaled_cardio)
+
+# Calculate confusion matrix for scaled data
+knn_cm_scaled = confusion_matrix(y_test, y_pred)
+
+# Plotting the confusion matrix with seaborn heatmap
+plt.figure(figsize=(10, 7))
+sns.heatmap(knn_cm_scaled, annot=True, fmt='d', cmap='YlGnBu')  # `fmt='d'` means decimal formatting
+plt.title('Confusion Matrix: KNeighbors with Scaled Data')
+plt.ylabel('True Label')
+plt.xlabel('Predicted Label')
+plt.show()
+```
+
+```{python}
+#| label: KNeighbors - confusion_matrix (feature selection)
+
+# Fit the model on the kbest training data
+knn_classifier.fit(X_train_fs_cardio, y_train)
+
+# Make predictions on the kbest testing data
+y_pred = knn_classifier.predict(X_test_fs_cardio)
+
+# Calculate confusion matrix for kbest data
+knn_cm_fs = confusion_matrix(y_test, y_pred)
+
+# Plotting the confusion matrix with seaborn heatmap
+plt.figure(figsize=(10, 7))
+sns.heatmap(knn_cm_fs, annot=True, fmt='d', cmap='YlGnBu')  # `fmt='d'` means decimal formatting
+plt.title('Confusion Matrix: KNeighbors with Feature Selection')
+plt.ylabel('True Label')
+plt.xlabel('Predicted Label')
+plt.show()
+```
+
+```{python}
+#| label: KNeighbors - confusion_matrix (scaled feature selection)
+
+# Fit the model on the kbest training data
+knn_classifier.fit(X_train_fs_scaled_cardio, y_train)
+
+# Make predictions on the kbest testing data
+y_pred = knn_classifier.predict(X_test_fs_scaled_cardio)
+
+# Calculate confusion matrix for kbest data
+knn_cm_fs_scaled = confusion_matrix(y_test, y_pred)
+
+# Plotting the confusion matrix with seaborn heatmap
+plt.figure(figsize=(10, 7))
+sns.heatmap(knn_cm_fs_scaled, annot=True, fmt='d', cmap='YlGnBu')  # `fmt='d'` means decimal formatting
+plt.title('Confusion Matrix: KNeighbors with Scaled Feature Selection')
+plt.ylabel('True Label')
+plt.xlabel('Predicted Label')
+plt.show()
+```
+
+### AdaBoost Classification
+
+#### AdaBoost with All Variables
+```{python}
+#| label: AdaBoost with all variables
+
+# AdaBoost with all variables
+start_time = time.time()
+
+# Initialize AdaBoost Classifier
+adab_classifier = AdaBoostClassifier()
+
+# Fit the model
+adab_classifier.fit(X_train, y_train)
+
+# Make predictions
+y_pred = adab_classifier.predict(X_test)
+
+# Calculate performance metrics
+accuracy = accuracy_score(y_test, y_pred)
+precision = precision_score(y_test, y_pred)
+recall = recall_score(y_test, y_pred)
+f1 = f1_score(y_test, y_pred)
+auc = roc_auc_score(y_test, y_pred)
+
+# Calculate computational time
+end_time = time.time()
+computational_time = end_time - start_time
+
+# Create a new row as a DataFrame to append
+new_row = pd.DataFrame([{
+    'Model': 'AdaBoost with All Variables',
+    'Accuracy': accuracy,
+    'Precision': precision,
+    'Recall': recall,
+    'F1-score': f1,
+    'ROC AUC Score': auc,
+    'Computational Time': computational_time
+}])
+
+results_cardio = pd.concat([results_cardio, new_row], ignore_index=True)
+
+results_cardio
+```
+
+#### AdaBoost with Scaled Data
+```{python}
+#| label: AdaBoost with scaled data
+
+# Start timing
+start_time = time.time()
+
+# Fit the model on scaled training data
+adab_classifier.fit(X_train_scaled_cardio, y_train)
+
+# Make predictions on the scaled test data
+y_pred = adab_classifier.predict(X_test_scaled_cardio)
+
+# Calculate performance metrics
+accuracy = accuracy_score(y_test, y_pred)
+precision = precision_score(y_test, y_pred)
+recall = recall_score(y_test, y_pred)
+f1 = f1_score(y_test, y_pred)
+auc = roc_auc_score(y_test, y_pred)
+
+# Calculate computational time
+end_time = time.time()
+computational_time = end_time - start_time
+
+# Create a new row as a DataFrame to append
+new_row = pd.DataFrame([{
+    'Model': 'AdaBoost with Scaled Data',
+    'Accuracy': accuracy,
+    'Precision': precision,
+    'Recall': recall,
+    'F1-score': f1,
+    'ROC AUC Score': auc,
+    'Computational Time': computational_time
+}])
+
+# Append the new row using pd.concat
+results_cardio = pd.concat([results_cardio, new_row], ignore_index=True)
+
+results_cardio
+```
+
+#### AdaBoost with Feature Selection
+```{python}
+#| label: KNeighbors with feature selection
+
+# Fit the model on scaled training data
+start_time = time.time()
+
+# Make predictions on the scaled test data
+adab_classifier.fit(X_train_fs_cardio, y_train)
+
+# Calculate performance metrics
+y_pred = adab_classifier.predict(X_test_fs_cardio)
+
+# Calculate computational time
+accuracy = accuracy_score(y_test, y_pred)
+precision = precision_score(y_test, y_pred)
+recall = recall_score(y_test, y_pred)
+f1 = f1_score(y_test, y_pred)
+auc = roc_auc_score(y_test, y_pred)
+
+# Create a new row as a DataFrame to append
+end_time = time.time()
+computational_time = end_time - start_time
+
+# Append the new row using pd.concat
+new_row = pd.DataFrame([{
+    'Model': 'AdaBoost with Feature Selection',
+    'Accuracy': accuracy,
+    'Precision': precision,
+    'Recall': recall,
+    'F1-score': f1,
+    'ROC AUC Score': auc,
+    'Computational Time': computational_time
+}])
+
+results_cardio = pd.concat([results_cardio, new_row], ignore_index=True)
+
+results_cardio
+```
+
+#### AdaBoost with Scaled Feature Selection
+```{python}
+#| label: KNeighbors with scaled feature selection
+
+# Fit the model on scaled training data
+start_time = time.time()
+
+# Make predictions on the scaled test data
+adab_classifier.fit(X_train_fs_scaled_cardio, y_train)
+
+# Calculate performance metrics
+y_pred = adab_classifier.predict(X_test_fs_scaled_cardio)
+
+# Calculate computational time
+accuracy = accuracy_score(y_test, y_pred)
+precision = precision_score(y_test, y_pred)
+recall = recall_score(y_test, y_pred)
+f1 = f1_score(y_test, y_pred)
+auc = roc_auc_score(y_test, y_pred)
+
+# Create a new row as a DataFrame to append
+end_time = time.time()
+computational_time = end_time - start_time
+
+# Append the new row using pd.concat
+new_row = pd.DataFrame([{
+    'Model': 'AdaBoost with Scaled Feature Selection',
+    'Accuracy': accuracy,
+    'Precision': precision,
+    'Recall': recall,
+    'F1-score': f1,
+    'ROC AUC Score': auc,
+    'Computational Time': computational_time
+}])
+
+results_cardio = pd.concat([results_cardio, new_row], ignore_index=True)
+
+results_cardio
+```
+
+#### AdaBoost with Resampling
+```{python}
+#| label: AdaBoost with resampling
+
+# Start timing
+start_time = time.time()
+
+# Fit the model on the kbest training data 
+adab_classifier.fit(X_train_ds, y_train_ds)
+
+# Make predictions on the kbest testing data
+y_pred_ds = adab_classifier.predict(X_test_ds)
+
+# Calculate performance metrics
+accuracy = accuracy_score(y_test_ds, y_pred_ds)
+precision = precision_score(y_test_ds, y_pred_ds)
+recall = recall_score(y_test_ds, y_pred_ds)
+f1 = f1_score(y_test_ds, y_pred_ds)
+auc = roc_auc_score(y_test_ds, y_pred_ds)
+
+# Calculate computational time
+end_time = time.time()
+computational_time = end_time - start_time
+
+# Create a new row as a DataFrame to append
+new_row = pd.DataFrame([{
+    'Model': 'AdaBoost with Resampling',
+    'Accuracy': accuracy,
+    'Precision': precision,
+    'Recall': recall,
+    'F1-score': f1,
+    'ROC AUC Score': auc,
+    'Computational Time': computational_time
+}])
+
+# Append the new row using pd.concat
+results_cardio = pd.concat([results_cardio, new_row], ignore_index=True)
+
+results_cardio
+```
+
+#### AdaBoost Comparison with Confusion Matrix
+```{python}
+#| label: KNeighbors - confusion_matrix (all)
+
+# Fit the model
+adab_classifier.fit(X_train, y_train)
+
+# Make predictions
+y_pred_adab = adab_classifier.predict(X_test)
+
+# Calculate confusion matrix
+adab_cm_all = confusion_matrix(y_test, y_pred_adab)
+
+# Plotting the confusion matrix with seaborn heatmap
+plt.figure(figsize=(10, 7))
+sns.heatmap(adab_cm_all, annot=True, fmt='d', cmap='YlGnBu')  # `fmt='d'` means decimal formatting
+plt.title('Confusion Matrix: AdaBoost with All Variables')
+plt.ylabel('True Label')
+plt.xlabel('Predicted Label')
+plt.show()
+```
+
+```{python}
+#| label: AdaBoost - confusion_matrix (scaled)
+
+# Fit the model on scaled training data
+adab_classifier.fit(X_train_scaled_cardio, y_train)
+
+# Make predictions on the scaled test data
+y_pred = adab_classifier.predict(X_test_scaled_cardio)
+
+# Calculate confusion matrix for scaled data
+adab_cm_scaled = confusion_matrix(y_test, y_pred)
+
+# Plotting the confusion matrix with seaborn heatmap
+plt.figure(figsize=(10, 7))
+sns.heatmap(adab_cm_scaled, annot=True, fmt='d', cmap='YlGnBu')  # `fmt='d'` means decimal formatting
+plt.title('Confusion Matrix: AdaBoost with Scaled Data')
+plt.ylabel('True Label')
+plt.xlabel('Predicted Label')
+plt.show()
+```
+
+```{python}
+#| label: KNeighbors - confusion_matrix (feature selection)
+
+# Make predictions on the scaled test data
+adab_classifier.fit(X_train_fs_cardio, y_train)
+
+# Calculate performance metrics
+y_pred = adab_classifier.predict(X_test_fs_cardio)
+
+# Calculate confusion matrix for scaled data
+adab_cm_fs = confusion_matrix(y_test, y_pred)
+
+# Plotting the confusion matrix with seaborn heatmap
+plt.figure(figsize=(10, 7))
+sns.heatmap(adab_cm_fs, annot=True, fmt='d', cmap='YlGnBu')  # `fmt='d'` means decimal formatting
+plt.title('Confusion Matrix: AdaBoost with Feature Selection')
+plt.ylabel('True Label')
+plt.xlabel('Predicted Label')
+plt.show()
+```
+
+```{python}
+#| label: KNeighbors - confusion_matrix (scaled feature selection)
+
+# Make predictions on the scaled test data
+adab_classifier.fit(X_train_fs_scaled_cardio, y_train)
+
+# Calculate performance metrics
+y_pred = adab_classifier.predict(X_test_fs_scaled_cardio)
+
+# Calculate confusion matrix for scaled data
+adab_cm_fs_scaled = confusion_matrix(y_test, y_pred)
+
+# Plotting the confusion matrix with seaborn heatmap
+plt.figure(figsize=(10, 7))
+sns.heatmap(adab_cm_fs_scaled, annot=True, fmt='d', cmap='YlGnBu')  # `fmt='d'` means decimal formatting
+plt.title('Confusion Matrix: AdaBoost with Scaled Feature Selection')
+plt.ylabel('True Label')
+plt.xlabel('Predicted Label')
+plt.show()
+```
+
+## Classification Model Performance Comparison
+
+```{python}
+#| label: model performance
+
+results_cardio
+print(results_cardio)
+```
+
+When evaluating the performance of machine learning models, we consider multiple metrics because each one gives us different insights into how well the model is doing for various aspects of the problem. 
+
+- **Accuracy:** This gives us the percentage of total correct predictions. It is straightforward but not always reliable and could be misleading, especially if our data is imbalance which means it has a lot more of one class than another as in our case in cardiovascular datasets.
+
+- **Precision:** This tells us how many of the items identified as positive by the model were actually positive. It's a measure of quality.
+
+- **Recall:** This metric shows us how many of the actual positive items were identified by the model. It's a measure of completeness.
+
+- **F1-score:** This is the harmonic mean of precision and recall and gives us a single score that balances both concerns.
+
+- **ROC AUC Score:** The area under the Receiver Operating Characteristic curve (ROC AUC) measures the tradeoff between true positive rate and false positive rate. It's useful for imbalanced classes.
+
+- **Computational Time:** Indicates the efficiency of the algorithm in terms of time taken to train the model.
+
+Model Performance Summary: 
+
+**Best Accuracy**
+
+- Model: ***Gradient Boosting with All Variables***
+
+- Why: This model has correctly predicted whether or not someone has heart disease most of the time (about 91.9% accurate).
+
+**Best Precision**
+
+- Model: ***Gradient Boosting with Resampling***
+
+- Why: When this model predicts that someone has heart disease, it is correct about 59.6% of the time.
+
+**Best Recall**
+- Model: ***Decision Tree with Resampling***
+
+- Why: This model is the best at catching almost all the cases of heart disease (about 40.6% of the time when heart disease is present, it catches it).
+
+**Best F1-Score**
+
+- Model: ***Gradient Boosting with Resampling***
+
+- Why: This model has the highest score in F1-score (about 42.2%), indicating a good balance between precision and recall which means neither missing too many real cases (high recall) nor making too many false positive (high precision).
+
+**Best ROC AUC Score**
+
+- Model: ***Decision Tree with Resampling***
+
+- Why: This model has the highest ROC AUC Score (around 63.3%), suggesting it has the best trade-off between the true positive rate and false positive rate and is most capable of distinguishing between the two classes.
+
+**Best Computational Time**
+
+- Model: ***Logistic Regression with Scaled Feature Selection***
+
+- Why: This model is the fastest to make its predictions (around 0.17 seconds), making it the best choice if you need quick prediction
+
+Overall Best Model:
+
+There is no a one-size-fits-all answer because the best model depends on what's most important for the situation:
+
+- If you want fast predictions, go for the quickest.
+- If you don't want to miss any cases of heart disease, look at recall.
+- If you want to be really sure someone has the disease when you say so, precision is your key.
+- If you want the best balance, check out the F1-score.
+- And if you need to be really sure about your sorting between healthy and not healthy, then ROC AUC Score is what you go for.
+
+For Heart Disease:
+
+You might prioritize a model that doesn't miss cases, even if it means some false positive. So, recall and F1-score could be more important than accuracy. But you also don't want too many false alarms stressing out healthy people, so a balance (good F1-score) is ideal.
+
+The model you choose ultimately depends on the specific cost-benefit trade-off of your application. If predicting the positive class correctly is crucial and false negatives are more costly, you would prioritize Recall and potentially choose a model with the highest Recall. If it's more important to be confident in your positive predictions (i.e., when a false positive has a high cost), you would prioritize Precision.
+
+In the context of a medical application like cardiovascular disease prediction, missing a condition (false negative) can be more dangerous than a false alarm (false positive), so a model with a higher Recall might be preferred. However, it's also important not to overwhelm the healthcare system with false alarms, so a balance is essential, making F1-score and ROC AUC important metrics.
+
+It is also worth noting that the computational time might be a concern in a real-time application, where faster predictions might be necessary. In that case, a model with a reasonable balance between performance and computational efficiency should be selected.
+
+# Business Sector: Hotel Reservations
+
+## Preprocessing steps in the Hotel Reservations
+
+```{python}
+hotel.head(5)
+```
+
+```{python}
+hotel.nunique()
+```
+
+```{python}
+hotel.info()
+```
+
+```{python}
+hotel.describe()
+```
+
+We can see that Booking_ID(nunique=36275), type_of_meal_plan(nunique=4), room_type_reserved(nunique=7), market_segment_type(nunique=5) and target variable booking_status(nunique=2) are all object variables. Therefore for some of them we can do Label Encoding to help our machine learning models in the next steps. Moreover, we will delete the first column "Booking_ID" because it doesnt help our analysis at all.
+
+```{python}
+# Drop the 'Booking ID' column
+hotel.drop(columns=['Booking_ID'], inplace=True)
+```
+
+For now, we want to check if there are any missing values in this data set:
+
+```{python}
+hotel.isna().sum()
+```
+
+From this, we can see that there are no missing values in this data set, so for now we are not going to remove anything else.
+
+### Label Enoding
+
+Now, we want to use Label Encoding for the variables: type_of_meal_plan, room_type_reserved, market_segment_type and booking_status.
+
+TYPE_OF_MEAL_PLAN VARIABLE:
+```{python}
+# Define the mapping dictionary
+meal_plan_mapping = {
+    "Not Selected": 0,
+    "Meal Plan 1": 1,
+    "Meal Plan 2": 2,
+    "Meal Plan 3": 3
+}
+room_reserved_mapping = {
+    "Room_Type 1": 1,
+    "Room_Type 2": 2,
+    "Room_Type 3": 3,
+    "Room_Type 4": 4,
+    "Room_Type 5": 5,
+    "Room_Type 6": 6,
+    "Room_Type 7": 7
+}
+market_segment_mapping = {
+    "Offline": 0,
+    "Online": 1,
+    "Corporate": 2,
+    "Aviation": 3,
+    "Complementary": 4
+}
+booking_status_mapping = {
+    "Not_Canceled": 0,
+    "Canceled": 1,
+}
+
+# Map the values of the columns using the mapping dictionary
+hotel['type_of_meal_plan'] = hotel['type_of_meal_plan'].map(meal_plan_mapping)
+hotel['room_type_reserved'] = hotel['room_type_reserved'].map(room_reserved_mapping)
+hotel['market_segment_type'] = hotel['market_segment_type'].map(market_segment_mapping)
+hotel['booking_status'] = hotel['booking_status'].map(booking_status_mapping)
+
+# Print the updated unique values to verify the label encoding
+print("Unique Values of type_of_meal_plan:")
+print(hotel['type_of_meal_plan'].unique())
+
+# Print unique values of room_type_reserved
+print("Unique Values of room_type_reserved:")
+print(hotel['room_type_reserved'].unique())
+
+# Print unique values of market_segment_type
+print("Unique Values of market_segment_type:")
+print(hotel['market_segment_type'].unique())
+
+# Print unique values of booking_status
+print("Unique Values of booking_status:")
+print(hotel['booking_status'].unique())
+```
+
+```{python}
+hotel.info()
+```
+Now, all the variables in our dataset are numerical.
+
+However, we have 3 columns which have to do with the date of the arrival, therefore we want to merge the columns into one date column, and drop these 3 unnecessary columns (arrival_year, arrival_month, arrival_date).
+
+```{python}
+# Convert 'arrival_year', 'arrival_month', and 'arrival_date' to string and concatenate them
+date_str = hotel['arrival_date'].astype(str) + '-' + hotel['arrival_month'].astype(str) + '-' + hotel['arrival_year'].astype(str)
+
+# Use errors='coerce' to replace invalid dates with NaT (Not a Time)
+hotel['arrival_date_full'] = pd.to_datetime(date_str, format='%d-%m-%Y', errors='coerce')
+
+# Drop the original date columns
+hotel.drop(columns=['arrival_year', 'arrival_month', 'arrival_date'], inplace=True)
+```
+
+```{python}
+# Display the updated DataFrame
+hotel.head(5)
+```
+
+Now, we want to use Plotly Express to visualize the booking status over time for the years 2017 and 2018. We filter the dataset to isolate records for each respective year and then create line plots to display the trend of booking status over time:
+```{python}
+import plotly.express as px
+
+# Extract month from the arrival date and convert to string
+hotel['arrival_month'] = hotel['arrival_date_full'].dt.strftime('%Y-%m')
+
+# Create a DataFrame with arrival month and booking status
+booking_status_df = hotel[['arrival_month', 'booking_status']].copy()
+
+# Group by arrival month and booking status, count occurrences, and unstack to separate booking statuses
+booking_status_count = booking_status_df.groupby(['arrival_month', 'booking_status']).size().unstack(fill_value=0)
+
+# Calculate total bookings (sum of bookings and cancellations) for each month
+booking_status_count['Total Bookings'] = booking_status_count.sum(axis=1)
+
+# Plotting
+fig = px.line(booking_status_count, x=booking_status_count.index, y=booking_status_count.columns,
+              title='Booking Status Over Time', labels={'arrival_month': 'Month', 'value': 'Count'},
+              template='plotly_dark')
+
+# Add a line for the total bookings per month
+fig.add_scatter(x=booking_status_count.index, y=booking_status_count['Total Bookings'],
+                mode='lines', name='Total Bookings', line_color='green')
+
+# Remove the duplicate legend entry for "Total Bookings"
+fig.update_traces(showlegend=False, selector=dict(name='Total Bookings'))
+
+# Add annotation to explain the green line
+fig.add_annotation(xref='paper', yref='paper', x=0.95, y=0.05,
+                   text='Total Bookings (Green line) = Sum of bookings and cancellations per month',
+                   showarrow=False, font=dict(color='black', size=12), align='right',)
+
+# Customizing the layout
+fig.update_layout(xaxis_title='Month', yaxis_title='Count', legend_title='Booking Status',
+                  width=1000, height=600, xaxis={'tickmode': 'array', 'tickvals': booking_status_count.index})
+
+# Show plot
+fig.show()
+```
+
+As we can see from this visualization, the number of non-cancelled bookings didn't change much between 2017 and 2018, while the number of cancelled bookings did. Moreover, the number of cancelled bookings increased as the total number of bookings increased. Therefore, we need more information about the hotel to understand why these cancellations occurred. However, based on the current data, there don't appear to be any anomalies.
+
+### Correlation Heatmap for the Hotel Dataset - numerical features
+
+```{python}
+#| label: Correlation heatmap for the hotel dataset 
+
+correlation = hotel.corr().round(2) # rounding it to 2 decimals 
+
+# Plotting with the Plotly library
+fig = px.imshow(correlation, x=correlation.index, y=correlation.columns, color_continuous_scale='Viridis', labels={'color': 'Correlation'})
+fig.update_layout(title='Correlation Heatmap for the Hotel Dataset', width=600, height=550)
+fig.show()
+```
+
+
+### Boxplot of the numerical features for the Hotel Dataset
+
+In order to see the outliers of specific fetaures
+
+```{python}
+#| label: Visualizing the boxplots for the numerical variables of the hotel dataset
+
+numerical_columns_hotel = hotel.select_dtypes(include=['int64', 'float64']).columns
+num_plots_per_row = 3
+num_rows = -(-len(numerical_columns_hotel) // num_plots_per_row)  
+
+plt.figure(figsize=(20, 4 * num_rows))
+
+for i, column in enumerate(numerical_columns_hotel, start=1):
+    plt.subplot(num_rows, num_plots_per_row, i)
+    sns.boxplot(x=hotel[column], palette='Set3')
+    plt.title(f"Boxplot for {column}")
+
+plt.tight_layout()
+plt.show()
+```
+
+### Histogram for the numerical features for the Hotel Reservations Dataset
+
+In order to see the skewness of the numerical features we need to plot histograms for each of the variables, if we see that in particular one of the variables are skewed that we can use the logarithmic properties in order to make that particular feature normally distributed.
+
+```{python}
+plt.figure(figsize=(20, 4 * num_rows))
+
+for i, column in enumerate(numerical_columns_hotel, start=1):
+    plt.subplot(num_rows, num_plots_per_row, i)
+    sns.histplot(x=hotel[column], palette='Set3', kde=True)  # Changed sns.boxplot to sns.histplot
+    plt.title(f"Histogram for {column}")  # Changed "Boxplot" to "Histogram"
+
+plt.tight_layout()
+plt.show()
+```
+
+From here, wer can see that only the variable lead_time is skewed (positively). Therefore we want to use log transformation to it to make it normally distributed.
+
+```{python}
+import numpy as np
+hotel['lead_time_log'] = np.log1p(hotel['lead_time'])
+```
+
+```{python}
+plt.figure(figsize=(8, 6))
+sns.histplot(hotel['lead_time_log'], kde=True, color='skyblue')
+plt.title('Histogram of lead_time_log')
+plt.xlabel('Lead Time (Log Transformed)')
+plt.ylabel('Frequency')
+plt.show()
+```
+
+Now, we want to remove the lead_time variable from the data set and only use the log transformed one for our analysis.
+
+```{python}
+hotel.drop(columns=['lead_time'], inplace=True)
+```
+
+
+Now we want to see if our data is balanced or not:
+```{python}
+class_distribution = hotel['booking_status'].value_counts()
+class_proportions = hotel['booking_status'].value_counts(normalize=True)
+
+imbalance_ratio = class_distribution[1] / class_distribution[0]
+
+print("Class Distribution:")
+print(class_distribution)
+
+print("\nClass Proportions:")
+print(class_proportions)
+
+print("\nImbalance Ratio (Class 1 / Class 0):", imbalance_ratio)
+```
+
+According to this, since the Class Proportions are 0- 67% and 1- 33%, then we can conclude that our data set in not imbalanced and we can continue with our analysis.
+
+Now we are going to continue with the machine learning models for predicting our target variable "Booking_status".
+
+```{python}
+from sklearn.preprocessing import StandardScaler
+from sklearn.model_selection import train_test_split
+X = hotel.drop(columns=['booking_status', 'arrival_date_full'])  # Remove 'booking_status' and 'arrival_date_full' columns
+y = hotel['booking_status']
+
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+
+# Initialize the StandardScaler
+scaler = StandardScaler()
+
+# Fit the scaler to the training data
+scaler.fit(X_train)
+
+# Transform the training and testing data separately
+X_train_scaled = scaler.transform(X_train)
+X_test_scaled = scaler.transform(X_test)
+
+# Convert scaled data back to DataFrames
+X_train_scaled_hotel = pd.DataFrame(X_train_scaled, columns=X.columns)
+X_test_scaled_hotel = pd.DataFrame(X_test_scaled, columns=X.columns)
+```
+
+Using SelectKBest method to see which are the best features to use for the feature selection:
+```{python}
+from sklearn.feature_selection import SelectKBest
+from sklearn.feature_selection import f_classif
+
+target_variable = 'booking_status'
+k = 10
+
+X_feature_hotel = hotel.drop(columns=['booking_status', 'arrival_date_full'])
+y_feature_hotel = hotel[target_variable]
+
+selector = SelectKBest(score_func=f_classif, k=k)
+X_selected = selector.fit_transform(X_feature_hotel, y_feature_hotel)
+
+selected_feature_indices = selector.get_support(indices=True)
+selected_feature_names = X_feature_hotel.columns[selected_feature_indices].tolist()
+
+print("Selected Features using SelectKBest:")
+print(selected_feature_names)
+```
+
+then putting these 10 best features in our X_train and then also scaling them:
+```{python}
+X_train_featureselection_hotel = X_train.drop(columns = ['no_of_children', 'room_type_reserved', 'no_of_previous_cancellations',  'lead_time_log'])
+X_test_featureselection_hotel = X_test.drop(columns = ['no_of_children', 'room_type_reserved','no_of_previous_cancellations', 'lead_time_log'])
+
+X_train_featureselection_scaled_hotel = X_train_scaled_hotel.drop(columns = ['no_of_children', 'room_type_reserved','no_of_previous_cancellations', 'lead_time_log'])
+X_test_featureselection_scaled_hotel = X_test_scaled_hotel.drop(columns = ['no_of_children', 'room_type_reserved','no_of_previous_cancellations', 'lead_time_log'])
+```
+
+
+
+## Logistic Regression 
+
+```{python}
+from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score, roc_auc_score
+from sklearn.linear_model import LogisticRegression
+import time
+import pandas as pd
+
+start_time = time.time()
+
+log_model = LogisticRegression()
+
+log_model.fit(X_train, y_train)
+
+# Make predictions on the test data
+y_pred = log_model.predict(X_test)
+
+# Calculate performance metrics
+accuracy = accuracy_score(y_test, y_pred)
+precision = precision_score(y_test, y_pred)
+recall = recall_score(y_test, y_pred)
+f1 = f1_score(y_test, y_pred)
+auc = roc_auc_score(y_test, y_pred)
+
+end_time = time.time()
+computational_time = end_time - start_time
+
+# Creating a performance scores dataframe
+results_hotel = pd.DataFrame(columns=['Model', 'Accuracy', 'Precision', 'Recall', 'F1-score', 'ROC AUC Score', 'Computational Time'])
+
+# Append the metrics to the DataFrame
+results_hotel = results_hotel.append({
+    'Model': 'Logistic Regression Classifier',
+    'Accuracy': accuracy,
+    'Precision': precision,
+    'Recall': recall,
+    'F1-score': f1,
+    'ROC AUC Score': auc,
+    'Computational Time': computational_time
+}, ignore_index=True)
+
+results_hotel
+```
+
+## Logistic Regression with scaled data
+```{python}
+start_time = time.time()
+
+log_model.fit(X_train_scaled_hotel, y_train)
+
+# Make predictions on the test data
+y_pred = log_model.predict(X_test_scaled_hotel)
+
+# Calculate performance metrics
+accuracy = accuracy_score(y_test, y_pred)
+precision = precision_score(y_test, y_pred)
+recall = recall_score(y_test, y_pred)
+f1 = f1_score(y_test, y_pred)
+auc = roc_auc_score(y_test, y_pred)
+
+end_time = time.time()
+computational_time = end_time - start_time
+
+# Append the metrics to the DataFrame
+results_hotel = results_hotel.append({
+    'Model': 'Logistic Regression Classifier Scaled',
+    'Accuracy': accuracy,
+    'Precision': precision,
+    'Recall': recall,
+    'F1-score': f1,
+    'ROC AUC Score': auc,
+    'Computational Time': computational_time
+}, ignore_index=True)
+
+results_hotel
+```
+
+## Logistic Regression with Feature Selection
+
+```{python}
+start_time = time.time()
+
+log_model.fit(X_train_featureselection_hotel, y_train)
+
+# Make predictions on the test data
+y_pred = log_model.predict(X_test_featureselection_hotel)
+
+# Calculate performance metrics
+accuracy = accuracy_score(y_test, y_pred)
+precision = precision_score(y_test, y_pred)
+recall = recall_score(y_test, y_pred)
+f1 = f1_score(y_test, y_pred)
+auc = roc_auc_score(y_test, y_pred)
+
+end_time = time.time()
+computational_time = end_time - start_time
+
+# Append the metrics to the DataFrame
+results_hotel = results_hotel.append({
+    'Model': 'Logistic Regression Classifier with Feature Selection',
+    'Accuracy': accuracy,
+    'Precision': precision,
+    'Recall': recall,
+    'F1-score': f1,
+    'ROC AUC Score': auc,
+    'Computational Time': computational_time
+}, ignore_index=True)
+
+results_hotel
+```
+
+## Logistic Regression with Feature Selection Scaled
+```{python}
+start_time = time.time()
+
+log_model.fit(X_train_featureselection_scaled_hotel, y_train)
+
+# Make predictions on the test data
+y_pred = log_model.predict(X_test_featureselection_scaled_hotel)
+
+# Calculate performance metrics
+accuracy = accuracy_score(y_test, y_pred)
+precision = precision_score(y_test, y_pred)
+recall = recall_score(y_test, y_pred)
+f1 = f1_score(y_test, y_pred)
+auc = roc_auc_score(y_test, y_pred)
+
+end_time = time.time()
+computational_time = end_time - start_time
+
+# Append the metrics to the DataFrame
+results_hotel = results_hotel.append({
+    'Model': 'Logistic Regression Classifier with Feature Selection Scaled',
+    'Accuracy': accuracy,
+    'Precision': precision,
+    'Recall': recall,
+    'F1-score': f1,
+    'ROC AUC Score': auc,
+    'Computational Time': computational_time
+}, ignore_index=True)
+
+results_hotel
+```
+
+## Decision Tree Classifier
+
+```{python}
+from sklearn.tree import DecisionTreeClassifier
+start_time = time.time()
+
+# Create a Decision Tree Classifier
+dt_clf = DecisionTreeClassifier()
+
+# Fit the model to the training data
+dt_clf.fit(X_train, y_train)
+
+# Make predictions on the test data
+y_pred = dt_clf.predict(X_test)
+
+# Calculate performance metrics
+accuracy = accuracy_score(y_test, y_pred)
+precision = precision_score(y_test, y_pred)
+recall = recall_score(y_test, y_pred)
+f1 = f1_score(y_test, y_pred)
+auc = roc_auc_score(y_test, y_pred)
+
+end_time = time.time()
+computational_time = end_time - start_time
+
+# Append the metrics to the DataFrame
+results_hotel = results_hotel.append({
+    'Model': 'Decision Tree Classifier',
+    'Accuracy': accuracy,
+    'Precision': precision,
+    'Recall': recall,
+    'F1-score': f1,
+    'ROC AUC Score': auc,
+    'Computational Time': computational_time
+}, ignore_index=True)
+
+results_hotel
+
+```
+
+## Decision Tree Classifier with the scaled data
+
+```{python}
+start_time = time.time()
+
+# Fit the model to the training data
+dt_clf.fit(X_train_scaled_hotel, y_train)
+
+# Make predictions on the test data
+y_pred = dt_clf.predict(X_test_scaled_hotel)
+
+# Calculate performance metrics
+accuracy = accuracy_score(y_test, y_pred)
+precision = precision_score(y_test, y_pred)
+recall = recall_score(y_test, y_pred)
+f1 = f1_score(y_test, y_pred)
+auc = roc_auc_score(y_test, y_pred)
+
+end_time = time.time()
+computational_time = end_time - start_time 
+
+# Append the metrics to the DataFrame
+results_hotel = results_hotel.append({
+    'Model': 'Decision Tree Classifier Scaled',
+    'Accuracy': accuracy,
+    'Precision': precision,
+    'Recall': recall,
+    'F1-score': f1,
+    'ROC AUC Score': auc,
+    'Computational Time': computational_time
+}, ignore_index=True)
+
+results_hotel
+```
+
+## Decision Tree Classifier with feature selection
+
+```{python}
+start_time = time.time()
+
+# Fit the model to the training data
+dt_clf.fit(X_train_featureselection_hotel, y_train)
+
+# Make predictions on the test data
+y_pred = dt_clf.predict(X_test_featureselection_hotel)
+
+# Calculate performance metrics
+accuracy = accuracy_score(y_test, y_pred)
+precision = precision_score(y_test, y_pred)
+recall = recall_score(y_test, y_pred)
+f1 = f1_score(y_test, y_pred)
+auc = roc_auc_score(y_test, y_pred)
+
+end_time = time.time()
+computational_time = end_time - start_time 
+
+# Append the metrics to the DataFrame
+results_hotel = results_hotel.append({
+    'Model': 'Decision Tree Classifier with Feature Selection',
+    'Accuracy': accuracy,
+    'Precision': precision,
+    'Recall': recall,
+    'F1-score': f1,
+    'ROC AUC Score': auc,
+    'Computational Time': computational_time
+}, ignore_index=True)
+
+results_hotel
+```
+
+## Decision Tree Classifier with the scaled data
+
+```{python}
+start_time = time.time()
+
+# Fit the model to the training data
+dt_clf.fit(X_train_featureselection_scaled_hotel, y_train)
+
+# Make predictions on the test data
+y_pred = dt_clf.predict(X_test_featureselection_scaled_hotel)
+
+# Calculate performance metrics
+accuracy = accuracy_score(y_test, y_pred)
+precision = precision_score(y_test, y_pred)
+recall = recall_score(y_test, y_pred)
+f1 = f1_score(y_test, y_pred)
+auc = roc_auc_score(y_test, y_pred)
+
+end_time = time.time()
+computational_time = end_time - start_time 
+
+# Append the metrics to the DataFrame
+results_hotel = results_hotel.append({
+    'Model': 'Decision Tree Classifier with Feature Selection Scaled',
+    'Accuracy': accuracy,
+    'Precision': precision,
+    'Recall': recall,
+    'F1-score': f1,
+    'ROC AUC Score': auc,
+    'Computational Time': computational_time
+}, ignore_index=True)
+
+results_hotel
+```
+
+## Random Forest Classifier 
+
+```{python}
+from sklearn.ensemble import RandomForestClassifier
+start_time = time.time()
+
+model_rf = RandomForestClassifier()
+model_rf.fit(X_train, y_train)
+
+# Make predictions on the test data
+y_pred = model_rf.predict(X_test)
+
+# Calculate performance metrics
+accuracy = accuracy_score(y_test, y_pred)
+precision = precision_score(y_test, y_pred)
+recall = recall_score(y_test, y_pred)
+f1 = f1_score(y_test, y_pred)
+auc = roc_auc_score(y_test, y_pred)
+
+end_time = time.time()
+computational_time = end_time - start_time
+
+# Append the metrics to the DataFrame
+results_hotel = results_hotel.append({
+    'Model': 'Random Forest Classifier',
+    'Accuracy': accuracy,
+    'Precision': precision,
+    'Recall': recall,
+    'F1-score': f1,
+    'ROC AUC Score': auc,
+    'Computational Time': computational_time
+}, ignore_index=True)
+
+results_hotel
+```
+
+## Random Forest Classifier with scaled data
+
+```{python}
+start_time = time.time()
+
+# Fit the model to the training data
+model_rf.fit(X_train_scaled_hotel, y_train)
+
+# Make predictions on the test data
+y_pred = model_rf.predict(X_test_scaled_hotel)
+
+# Calculate performance metrics
+accuracy = accuracy_score(y_test, y_pred)
+precision = precision_score(y_test, y_pred)
+recall = recall_score(y_test, y_pred)
+f1 = f1_score(y_test, y_pred)
+auc = roc_auc_score(y_test, y_pred)
+
+end_time = time.time()
+computational_time = end_time - start_time
+
+# Append the metrics to the DataFrame
+results_hotel = results_hotel.append({
+    'Model': 'Random Forest Classifier Scaled',
+    'Accuracy': accuracy,
+    'Precision': precision,
+    'Recall': recall,
+    'F1-score': f1,
+    'ROC AUC Score': auc,
+    'Computational Time': computational_time
+}, ignore_index=True)
+
+results_hotel
+```
+
+## Random Forest Classifier with feature selection
+
+```{python}
+start_time = time.time()
+
+# Fit the model to the training data
+model_rf.fit(X_train_featureselection_hotel, y_train)
+
+# Make predictions on the test data
+y_pred = model_rf.predict(X_test_featureselection_hotel)
+
+# Calculate performance metrics
+accuracy = accuracy_score(y_test, y_pred)
+precision = precision_score(y_test, y_pred)
+recall = recall_score(y_test, y_pred)
+f1 = f1_score(y_test, y_pred)
+auc = roc_auc_score(y_test, y_pred)
+
+end_time = time.time()
+computational_time = end_time - start_time
+
+# Append the metrics to the DataFrame
+results_hotel = results_hotel.append({
+    'Model': 'Random Forest Classifier with Feature Selection',
+    'Accuracy': accuracy,
+    'Precision': precision,
+    'Recall': recall,
+    'F1-score': f1,
+    'ROC AUC Score': auc,
+    'Computational Time': computational_time
+}, ignore_index=True)
+
+results_hotel
+```
+
+## Random Forest Classifier with feature selection Scaled
+
+```{python}
+start_time = time.time()
+
+# Fit the model to the training data
+model_rf.fit(X_train_featureselection_scaled_hotel, y_train)
+
+# Make predictions on the test data
+y_pred = model_rf.predict(X_test_featureselection_scaled_hotel)
+
+# Calculate performance metrics
+accuracy = accuracy_score(y_test, y_pred)
+precision = precision_score(y_test, y_pred)
+recall = recall_score(y_test, y_pred)
+f1 = f1_score(y_test, y_pred)
+auc = roc_auc_score(y_test, y_pred)
+
+end_time = time.time()
+computational_time = end_time - start_time
+
+# Append the metrics to the DataFrame
+results_hotel = results_hotel.append({
+    'Model': 'Random Forest Classifier with Feature Selection Scaled',
+    'Accuracy': accuracy,
+    'Precision': precision,
+    'Recall': recall,
+    'F1-score': f1,
+    'ROC AUC Score': auc,
+    'Computational Time': computational_time
+}, ignore_index=True)
+
+results_hotel
+```
+
+## Gradient Boosting Classifier
+
+```{python}
+from sklearn.ensemble import GradientBoostingClassifier
+start_time = time.time()
+
+# Initialize Gradient Boosting Classifier
+gb_classifier = GradientBoostingClassifier()
+
+# Fit the model
+gb_classifier.fit(X_train, y_train)
+
+# Make predictions on the test data
+y_pred_gb = gb_classifier.predict(X_test)
+
+# Calculate accuracy for the Gradient Boosting Classifier
+accuracy_gb = accuracy_score(y_test, y_pred_gb)
+precision_gb = precision_score(y_test, y_pred_gb)
+recall_gb = recall_score(y_test, y_pred_gb)
+f1_gb = f1_score(y_test, y_pred_gb)
+auc_gb = roc_auc_score(y_test, y_pred_gb)
+
+end_time = time.time()
+computational_time = end_time - start_time 
+
+# Append the metrics to the DataFrame
+results_hotel = results_hotel.append({
+    'Model': 'Gradient Boosting Classifier',
+    'Accuracy': accuracy_gb,
+    'Precision': precision_gb,
+    'Recall': recall_gb,
+    'F1-score': f1_gb,
+    'ROC AUC Score': auc_gb,
+    'Computational Time': computational_time
+}, ignore_index=True)
+
+# Print the updated DataFrame
+results_hotel
+```
+
+## Gradient Boosting Classifier with Scaled Data
+
+```{python}
+start_time = time.time()
+# Initialize Gradient Boosting Classifier
+gb_classifier = GradientBoostingClassifier()
+
+# Fit the model
+gb_classifier.fit(X_train_scaled_hotel, y_train)
+
+# Make predictions on the test data
+y_pred_gbs = gb_classifier.predict(X_test_scaled_hotel)
+
+# Calculate accuracy for the Gradient Boosting Classifier
+accuracy_gbs = accuracy_score(y_test, y_pred_gbs)
+precision_gbs = precision_score(y_test, y_pred_gbs)
+recall_gbs = recall_score(y_test, y_pred_gbs)
+f1_gbs = f1_score(y_test, y_pred_gbs)
+auc_gbs = roc_auc_score(y_test, y_pred_gbs)
+
+end_time = time.time()
+computational_time = end_time - start_time
+
+# Append the metrics to the DataFrame
+results_hotel = results_hotel.append({
+    'Model': 'Gradient Boosting Classifier Scaled',
+    'Accuracy': accuracy_gbs,
+    'Precision': precision_gbs,
+    'Recall': recall_gbs,
+    'F1-score': f1_gbs,
+    'ROC AUC Score': auc_gbs,
+    'Computational Time': computational_time
+}, ignore_index=True)
+
+# Print the updated DataFrame
+results_hotel
+```
+
+## Gradient Boosting Classifier with Feature Selection
+
+```{python}
+start_time = time.time()
+# Initialize Gradient Boosting Classifier
+gb_classifier = GradientBoostingClassifier()
+
+# Fit the model
+gb_classifier.fit(X_train_featureselection_hotel, y_train)
+
+# Make predictions on the test data
+y_pred_gbs = gb_classifier.predict(X_test_featureselection_hotel)
+
+# Calculate accuracy for the Gradient Boosting Classifier
+accuracy_gbs = accuracy_score(y_test, y_pred_gbs)
+precision_gbs = precision_score(y_test, y_pred_gbs)
+recall_gbs = recall_score(y_test, y_pred_gbs)
+f1_gbs = f1_score(y_test, y_pred_gbs)
+auc_gbs = roc_auc_score(y_test, y_pred_gbs)
+
+end_time = time.time()
+computational_time = end_time - start_time
+
+# Append the metrics to the DataFrame
+results_hotel = results_hotel.append({
+    'Model': 'Gradient Boosting Classifier with Feature Selection',
+    'Accuracy': accuracy_gbs,
+    'Precision': precision_gbs,
+    'Recall': recall_gbs,
+    'F1-score': f1_gbs,
+    'ROC AUC Score': auc_gbs,
+    'Computational Time': computational_time
+}, ignore_index=True)
+
+# Print the updated DataFrame
+results_hotel
+```
+
+## Gradient Boosting Classifier with Feature Selection Scaled
+
+```{python}
+start_time = time.time()
+# Initialize Gradient Boosting Classifier
+gb_classifier = GradientBoostingClassifier()
+
+# Fit the model
+gb_classifier.fit(X_train_featureselection_scaled_hotel, y_train)
+
+# Make predictions on the test data
+y_pred_gbs = gb_classifier.predict(X_test_featureselection_scaled_hotel)
+
+# Calculate accuracy for the Gradient Boosting Classifier
+accuracy_gbs = accuracy_score(y_test, y_pred_gbs)
+precision_gbs = precision_score(y_test, y_pred_gbs)
+recall_gbs = recall_score(y_test, y_pred_gbs)
+f1_gbs = f1_score(y_test, y_pred_gbs)
+auc_gbs = roc_auc_score(y_test, y_pred_gbs)
+
+end_time = time.time()
+computational_time = end_time - start_time
+
+# Append the metrics to the DataFrame
+results_hotel = results_hotel.append({
+    'Model': 'Gradient Boosting Classifier with Feature Selection Scaled',
+    'Accuracy': accuracy_gbs,
+    'Precision': precision_gbs,
+    'Recall': recall_gbs,
+    'F1-score': f1_gbs,
+    'ROC AUC Score': auc_gbs,
+    'Computational Time': computational_time
+}, ignore_index=True)
+
+# Print the updated DataFrame
+results_hotel
+```
+
+## KNN Classifier
+
+```{python}
+from sklearn.neighbors import KNeighborsClassifier
+
+X_test = np.array(X_test)
+
+start_time = time.time()
+
+# Initialize K-Nearest Neighbors Classifier
+knn_classifier = KNeighborsClassifier()
+
+# Fit the model
+knn_classifier.fit(X_train, y_train)
+
+# Make predictions on the test data
+y_pred_knn = knn_classifier.predict(X_test)
+
+# Calculate accuracy for the K-Nearest Neighbors Classifier
+accuracy_knn = accuracy_score(y_test, y_pred_knn)
+precision_knn = precision_score(y_test, y_pred_knn)
+recall_knn = recall_score(y_test, y_pred_knn)
+f1_knn = f1_score(y_test, y_pred_knn)
+auc_knn = roc_auc_score(y_test, y_pred_knn)
+
+end_time = time.time()
+computational_time = end_time - start_time
+
+# Append the metrics to the DataFrame
+results_hotel = results_hotel.append({
+    'Model': 'KNN Classifier',
+    'Accuracy': accuracy_knn,
+    'Precision': precision_knn,
+    'Recall': recall_knn,
+    'F1-score': f1_knn,
+    'ROC AUC Score': auc_knn,
+    'Computational Time': computational_time
+}, ignore_index=True)
+
+# Print the updated DataFrame
+results_hotel
+```
+
+## KNN Classifier with Scaled Data
+
+```{python}
+
+X_test_scaled_hotel = np.array(X_test_scaled_hotel)
+
+start_time = time.time()
+
+# Fit the model
+knn_classifier.fit(X_train_scaled_hotel, y_train)
+
+# Make predictions on the test data
+y_pred_knns = knn_classifier.predict(X_test_scaled_hotel)
+
+# Append the accuracy score for the second model to the DataFrame
+accuracy_knns = accuracy_score(y_test, y_pred_knns)
+precision_knns = precision_score(y_test, y_pred_knns)
+recall_knns = recall_score(y_test, y_pred_knns)
+f1_knns = f1_score(y_test, y_pred_knns)
+auc_knns = roc_auc_score(y_test, y_pred_knns)
+
+end_time = time.time()
+computational_time = end_time - start_time
+
+# Append the metrics to the DataFrame
+results_hotel = results_hotel.append({
+    'Model': 'KNN Classifier Scaled',
+    'Accuracy': accuracy_knns,
+    'Precision': precision_knns,
+    'Recall': recall_knns,
+    'F1-score': f1_knns,
+    'ROC AUC Score': auc_knns,
+    'Computational Time': computational_time
+}, ignore_index=True)
+
+# Print the updated DataFrame
+results_hotel
+```
+
+## KNN Classifier with Feature Selection
+
+```{python}
+
+X_test_featureselection_hotel = np.array(X_test_featureselection_hotel)
+
+start_time = time.time()
+
+# Fit the model
+knn_classifier.fit(X_train_featureselection_hotel, y_train)
+
+# Make predictions on the test data
+y_pred_knns = knn_classifier.predict(X_test_featureselection_hotel)
+
+# Append the accuracy score for the second model to the DataFrame
+accuracy_knns = accuracy_score(y_test, y_pred_knns)
+precision_knns = precision_score(y_test, y_pred_knns)
+recall_knns = recall_score(y_test, y_pred_knns)
+f1_knns = f1_score(y_test, y_pred_knns)
+auc_knns = roc_auc_score(y_test, y_pred_knns)
+
+end_time = time.time()
+computational_time = end_time - start_time
+
+# Append the metrics to the DataFrame
+results_hotel = results_hotel.append({
+    'Model': 'KNN Classifier with Feature Selection',
+    'Accuracy': accuracy_knns,
+    'Precision': precision_knns,
+    'Recall': recall_knns,
+    'F1-score': f1_knns,
+    'ROC AUC Score': auc_knns,
+    'Computational Time': computational_time
+}, ignore_index=True)
+
+# Print the updated DataFrame
+results_hotel
+```
+
+## KNN Classifier with Feature Selection Scaled 
+
+```{python}
+
+X_test_featureselection_scaled_hotel = np.array(X_test_featureselection_scaled_hotel)
+
+start_time = time.time()
+
+# Fit the model
+knn_classifier.fit(X_train_featureselection_scaled_hotel, y_train)
+
+# Make predictions on the test data
+y_pred_knns = knn_classifier.predict(X_test_featureselection_scaled_hotel)
+
+# Append the accuracy score for the second model to the DataFrame
+accuracy_knns = accuracy_score(y_test, y_pred_knns)
+precision_knns = precision_score(y_test, y_pred_knns)
+recall_knns = recall_score(y_test, y_pred_knns)
+f1_knns = f1_score(y_test, y_pred_knns)
+auc_knns = roc_auc_score(y_test, y_pred_knns)
+
+end_time = time.time()
+computational_time = end_time - start_time
+
+# Append the metrics to the DataFrame
+results_hotel = results_hotel.append({
+    'Model': 'KNN Classifier with Feature Selection Scaled',
+    'Accuracy': accuracy_knns,
+    'Precision': precision_knns,
+    'Recall': recall_knns,
+    'F1-score': f1_knns,
+    'ROC AUC Score': auc_knns,
+    'Computational Time': computational_time
+}, ignore_index=True)
+
+# Print the updated DataFrame
+results_hotel
+```
+
+## AdaBoost Classifier 
+
+```{python}
+from sklearn.ensemble import AdaBoostClassifier
+
+start_time = time.time()
+# Initialize AdaBoost Classifier
+adaboost_classifier = AdaBoostClassifier()
+
+# Fit the model
+adaboost_classifier.fit(X_train, y_train)
+
+# Make predictions on the test data
+y_pred_adaboost = adaboost_classifier.predict(X_test)
+
+# Calculate accuracy for the AdaBoost Classifier
+accuracy_adaboost = accuracy_score(y_test, y_pred_adaboost)
+precision_adaboost = precision_score(y_test, y_pred_adaboost)
+recall_adaboost = recall_score(y_test, y_pred_adaboost)
+f1_adaboost = f1_score(y_test, y_pred_adaboost)
+auc_adaboost = roc_auc_score(y_test, y_pred_adaboost)
+
+end_time = time.time()
+computational_time = end_time - start_time
+
+# Append the metrics to the DataFrame
+results_hotel = results_hotel.append({
+    'Model': 'AdaBoost Classifier',
+    'Accuracy': accuracy_adaboost,
+    'Precision': precision_adaboost,
+    'Recall': recall_adaboost,
+    'F1-score': f1_adaboost,
+    'ROC AUC Score': auc_adaboost,
+    'Computational Time': computational_time
+}, ignore_index=True)
+
+# Print the updated DataFrame
+results_hotel
+```
+
+## AdaBoost Classifier Scaled
+
+```{python}
+start_time = time.time()
+
+# Fit the model
+adaboost_classifier.fit(X_train_scaled_hotel, y_train)
+
+# Make predictions on the test data
+y_pred_adaboost = adaboost_classifier.predict(X_test_scaled_hotel)
+
+# Calculate accuracy for the AdaBoost Classifier
+accuracy_adaboost = accuracy_score(y_test, y_pred_adaboost)
+precision_adaboost = precision_score(y_test, y_pred_adaboost)
+recall_adaboost = recall_score(y_test, y_pred_adaboost)
+f1_adaboost = f1_score(y_test, y_pred_adaboost)
+auc_adaboost = roc_auc_score(y_test, y_pred_adaboost)
+
+end_time = time.time()
+computational_time = end_time - start_time
+
+# Append the metrics to the DataFrame
+results_hotel = results_hotel.append({
+    'Model': 'AdaBoost Classifier Scaled',
+    'Accuracy': accuracy_adaboost,
+    'Precision': precision_adaboost,
+    'Recall': recall_adaboost,
+    'F1-score': f1_adaboost,
+    'ROC AUC Score': auc_adaboost,
+    'Computational Time': computational_time
+}, ignore_index=True)
+
+# Print the updated DataFrame
+results_hotel
+```
+
+## AdaBoost Classifier with Feature Selection
+
+```{python}
+start_time = time.time()
+
+# Fit the model
+adaboost_classifier.fit(X_train_featureselection_hotel, y_train)
+
+# Make predictions on the test data
+y_pred_adaboost = adaboost_classifier.predict(X_test_featureselection_hotel)
+
+# Calculate accuracy for the AdaBoost Classifier
+accuracy_adaboost = accuracy_score(y_test, y_pred_adaboost)
+precision_adaboost = precision_score(y_test, y_pred_adaboost)
+recall_adaboost = recall_score(y_test, y_pred_adaboost)
+f1_adaboost = f1_score(y_test, y_pred_adaboost)
+auc_adaboost = roc_auc_score(y_test, y_pred_adaboost)
+
+end_time = time.time()
+computational_time = end_time - start_time
+
+# Append the metrics to the DataFrame
+results_hotel = results_hotel.append({
+    'Model': 'AdaBoost Classifier with Feature Selection',
+    'Accuracy': accuracy_adaboost,
+    'Precision': precision_adaboost,
+    'Recall': recall_adaboost,
+    'F1-score': f1_adaboost,
+    'ROC AUC Score': auc_adaboost,
+    'Computational Time': computational_time
+}, ignore_index=True)
+
+# Print the updated DataFrame
+results_hotel
+```
+
+## AdaBoost Classifier with Feature Selection Scaled
+
+```{python}
+start_time = time.time()
+
+# Fit the model
+adaboost_classifier.fit(X_train_featureselection_scaled_hotel, y_train)
+
+# Make predictions on the test data
+y_pred_adaboost = adaboost_classifier.predict(X_test_featureselection_scaled_hotel)
+
+# Calculate accuracy for the AdaBoost Classifier
+accuracy_adaboost = accuracy_score(y_test, y_pred_adaboost)
+precision_adaboost = precision_score(y_test, y_pred_adaboost)
+recall_adaboost = recall_score(y_test, y_pred_adaboost)
+f1_adaboost = f1_score(y_test, y_pred_adaboost)
+auc_adaboost = roc_auc_score(y_test, y_pred_adaboost)
+
+end_time = time.time()
+computational_time = end_time - start_time
+
+# Append the metrics to the DataFrame
+results_hotel = results_hotel.append({
+    'Model': 'AdaBoost Classifier with Feature Selection Scaled',
+    'Accuracy': accuracy_adaboost,
+    'Precision': precision_adaboost,
+    'Recall': recall_adaboost,
+    'F1-score': f1_adaboost,
+    'ROC AUC Score': auc_adaboost, 
+    'Computational Time': computational_time
+}, ignore_index=True)
+
+# Print the updated DataFrame
+results_hotel
+```
+
+From the final table containing all the results from the models we used, we can observe that the Random Forest Classifier (which performs almost the same as the Random Forest Scaled) demonstrates the best performance for this dataset. It achieved the highest scores across all measures: Accuracy (~89%), Precision (~86%), Recall (~79%), F1-score (~82%), and ROC&AUC Score (~86%). Although it has a computational time of approximately 4 seconds, this is not considered significant given its best performance.
+
+# TODO
+
+# Business Sector: Hotel Reservation Data Set 
+

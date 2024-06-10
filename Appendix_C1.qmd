@@ -1,0 +1,4323 @@
+---
+title: "Performance of Predictive Models - The Interpretability and Explainability"
+subtitle: "Authors: Leona Hasani, Leona Hoxha, Nanmanat Disayakamonpan, Nastaran Mesgari"
+format:
+  html:                     
+    standalone: true        
+    embed-resources: true   
+    code-fold: false        
+    number-sections: true  
+    toc: true 
+highlight-style: github 
+               
+---
+
+
+# Project Overview
+
+## Introduction
+
+Our projects takes into consideration three different datasets from Kaggle, each one of them from different industries: Cardiovascural Dataset from the health industry, Weather in Australia from the environmental industry, and Hotel Reservation from the business industry.
+
+The objective of our project is to assess the performance of various supervised learning algorithms in predicting binary target variables. In the next section, we outline the key questions guiding our project, which we will answer throughout the project and at results and key findings.
+
+Moreover, we aim to examine how the most effective supervised machine learning algorithm learns within a given dataset. To achieve this, we will utilize learning curves, which provide insights into the algorithm's performance as it processes more training data. Additionally, we will devote significant attention to hyperparameter tuning to optimize model performance. By adjusting these parameters, we seek to identify any potential overfitting issues within the datasets. This analysis will involve visualizations showcasing the training and testing performance metrics across various hyperparameter settings.
+
+The primary goal of this project is to enhance our understanding of supervised predictive models, with particular emphasis on overfitting. Overfitting is a complex concept that can be challenging to grasp, often leading to misconceptions. By delving into this topic, we aim to clarify its nuances and implications within the context of machine learning models. Through thorough examination and visualization of performance metrics, we aim to shed light on the factors contributing to overfitting and strategies for mitigating its effects.
+
+## Questions and Problems
+
+In our project, we delve into a series of questions and challenges aimed at enhancing our model's performance and interpretability. We prioritize the questions based on their significance and relevance as follows: 
+
+<span style="color: steelblue">**1.** *Can the implementation of more sophisticated modeling methods within our dataset lead to enhanced model performance, and how can we interpret such improvements?* </span>
+
+ <span style="color: steelblue">**2.** *Does it mean that if one model performs the best in one particular dataset, it would be the same for another dataset with the same method?* </span>
+
+<span style="color: steelblue">**3.** *What is the impact of standardization and normalization techniques on the performance scores of our models?*</span>
+
+<span style="color: steelblue">**4.** *Do we have any imbalanced dataset? If yes, what approach could we use to balance the data?*</span>
+
+<span style="color: steelblue">**5.** *How can we analyze the trade-off dynamics between including all available features and employing feature selection techniques?*</span>
+
+<span style="color: steelblue">**6.** *What approach can be employed to identify the optimal hyperparameters of specific models?*</span>
+
+<span style="color: steelblue">**7.** *Is there a risk of overfitting within our datasets, and what measures can be taken to assess and mitigate this risk effectively?* </span>
+
+
+After the preprocessing steps, exporatory data analysis, and modelling part, at the results and the conclusion part we will try to answer each one of the research questions that are listed above.
+
+## Core Methodology and Additional Elements
+
+As our project delves into predictive models and their interpretability, we aim to provide concise explanations of each model. Additionally, we emphasize the importance of exploring additional techniques to enhance model performance and assess the risk of overfitting in our datasets. Therefore, we offer an overview of our core methodology and additional techniques employed in this project. 
+
+### *Resampling (Random Undersampling)*
+
+In many fields like healthcare, imbalanced datasets are common, where one class is much more prevalent than others. This can lead to biased models favoring the dominant class (Bach et al., 2019). One approach to address this is resampling, which involves adjusting the dataset to achieve a more balanced distribution through undersampling the majority class, oversampling the minority class, or a hybrid of both (Snieder et al., 2020). Undersampling, where the majority class is reduced, is suitable for our project, given the lower prevalence of heart disease compared to healthy cases. We'll use an 80:20 undersampling ratio to strike a balance between improving the model's ability to detect heart disease and maintaining a dataset representative of real-world distributions (Yanminsun et al.,2011).
+
+### *Feature Selection: KBest*
+
+SelectKBest is one of the univariate feature selection methods. SelectKBest then selects the top k features with the highest scores, indicating they are the most relevant for predicting the target variable (Nair & Bhagat, 2019). Therefore, it helps focus on the task's most important features, making the dataset more manageable and potentially improving the machine learning model's performance. 
+
+### *Model Performance Metrics*
+
+Due to the characteristics of our target variables in all three datasets, we have to employ classification models, therefore the evaluation metrics will offer a quantitative assessment of how well the models perform (Programmer, 2023).
+
+#### *Accuracy*
+
+Accuracy is the most used performance metric for evaluating a binary classification model. It measures the proportion of correct predictions made by the model out of all the predictions. A high accuracy score indicates that the model is making a large proportion of correct predictions, while a low accuracy score indicates that the model is making too many incorrect predictions.
+
+Accuracy is calculated using the following formula:
+Accuracy = (TP + TN) / (TP + TN + FP + FN)
+
+where TP represents the number of true positives, TN the number of true negatives, FP the number of false positives, and FN is the number of false negatives(Programmer, 2023).
+
+#### *Precision*
+
+Precision is a metric that measures the proportion of true positives (TP) among the total that are predicted as positive by the model. In other words, precision measures the accuracy of the positive predictions made by the model. A high precision score indicates that the model is able to accurately identify positives, while a low precision score indicates that the model is making too many false positive (FP) predictions.
+
+Precision is calculated using the following formula:
+Precision = TP / (TP + FP)
+
+where TP is the number of true positives and FP is the number of false positives (Programmer, 2023).
+
+#### *Recall*
+
+Recall, also known as sensitivity or true positive rate (TPR), is a performance metric that measures the proportion of positives that are correctly identified by the model out of all the actual positives. In other words, recall measures the model’s ability to correctly identify positives. A high recall score indicates that the model is able to identify a large proportion of positives, while a low recall score indicates that the model is missing many positives.
+
+Recall is calculated using the following formula:
+Recall = TP / (TP + FN)
+
+where TP is the number of true positive instances and FN is the number of false negative instances (Programmer, 2023).
+
+#### *F1-score*
+
+F1-score is a performance metric that combines precision and recall to provide a comprehensive evaluation of the performance of a binary classification model. It measures the harmonic mean of precision and recall, giving equal importance to both metrics. A high F1-score indicates that the model is performing well in both precision and recall, while a low F1-score indicates that the model is not performing well in either precision or recall (Programmer, 2023).
+
+F1-score is calculated using the following formula:
+F1-score = 2 * (precision * recall) / (precision + recall)
+
+where precision is the proportion of true positive cases among all the cases predicted as positive, and recall is the proportion of true positive cases among all the actual positive cases.
+
+#### *AUC-ROC curve*
+
+The ROC(Receiver Operating Characteristic) curve is a graphical representation of the performance of a binary classifier, indicating the tradeoff between true positive rate (TPR) and false positive rate (FPR) at different thresholds. The AUC represents the area under this curve, which ranges from 0 to 1, with a higher AUC indicating better model performance (Programmer, 2023).
+
+The TPR and FPR are defined as follows:
+True Positive Rate (TPR,Sensitivity) = True Positives / (True Positives + False Negatives)
+False Positive Rate (FPR,Specificity) = False Positives / (False Positives + True Negatives)
+
+### *Models*
+
+In each of the datasets, we've applied six different classification algorithms. These algorithms are used to predict outcomes that are either true or false. The goal is to determine which model performs best in terms of accuracy, precision, and other performance measures for each specific dataset. This helps us understand which algorithm is most effective for a given dataset and prediction task. Before proceeding with the analysis and the project, it's essential to grasp the functioning and construction of each model. Understanding each model's mechanics provides insight into how it makes predictions and its underlying assumptions. This comprehension enables us to interpret the results more effectively and choose the most suitable model for our specific dataset and problem. All the classification models have been used from the sklearn library.
+
+#### *Logistic Regression Classifier*
+
+Logistic regression predicts the likelihood of an event based on independent variables, making it valuable for classification tasks. By transforming odds into probabilities, it generates predictions bounded between 0 and 1. Coefficients are optimized through maximum likelihood estimation, allowing for efficient prediction (IBM, 2022).
+
+#### *Decision Tree Classifier*
+
+A decision tree is a type of algorithm used in machine learning for tasks like sorting data into categories or making predictions. It's like a flowchart, starting with a main question (the root node) and then branching out based on different answers (branches) to eventually reach final conclusions (leaf nodes). It's designed to divide data into smaller, more manageable groups by making decisions at each step. The goal is to create simple, easy-to-understand rules that accurately predict outcomes. Decision trees can get complex as they grow, so techniques like pruning (removing unnecessary branches) and using ensembles (groups of trees) help keep them accurate and efficient (IBM, 2023).
+
+#### *Random Forest Classifier*
+
+A random forest is a machine learning algorithm that combines the outputs of multiple decision trees to make predictions. By using a collection of decision trees and injecting randomness into the process, random forests reduce the risk of overfitting and improve accuracy. Each tree in the forest is built on a subset of the data and a subset of features, resulting in a diverse set of trees that work together to provide more accurate predictions (IBM, 2023b).
+
+#### *Gradient Boosting Classifier*
+
+Gradient boosting is a powerful machine learning technique that combines weak learners, typically decision trees, into a strong predictive model. It operates by sequentially adding trees to correct the errors of the previous ones, using a gradient descent approach to minimize a chosen loss function. This method, marked by its flexibility and ability to handle various types of data, is enhanced through techniques like tree constraints, shrinkage, random sampling, and penalized learning, which mitigate overfitting and enhance predictive accuracy (Jason Brownlee, 2018).
+
+#### *KNeighbors Classifier*
+
+The K-Nearest Neighbors (KNN) classifier is a type of supervised learning algorithm used for classification tasks. It makes predictions based on the similarity of input data points to the known data points in the training dataset.  By creating neighborhoods in the dataset, KNN assigns new data samples to the neighborhood where they best fit. KNN is particularly effective when dealing with numerical data and a small number of features, and it excels in scenarios with less scattered data and few outliers (Alves, 2021).
+
+#### *Adaboost Classier*
+
+AdaBoost, short for Adaptive Boosting, is a powerful ensemble learning algorithm that combines multiple weak classifiers to create a strong predictive model. Its main idea involves iteratively training weak classifiers on different subsets of the training data, assigning higher weights to misclassified samples in each iteration. By focusing on challenging examples, AdaBoost enables subsequent classifiers to improve their performance. The algorithm starts by assigning equal weights to all training examples, then iterates through training weak classifiers, adjusting sample weights and combining classifier predictions based on their performance. This process continues for a specified number of iterations, resulting in a final prediction based on the weighted votes of all weak classifiers (Wizards, 2023).
+
+### *Learning Curve*
+
+A learning curve is applied to illustrate how well a model performs based on the amount of training data. It helps identify learning issues like underfitting or overfitting and assesses dataset representativeness. By comparing training and validation scores across different training set sizes, learning curves reveal how much the model improves with more data and whether its limitations are due to bias or variance errors (Giola et al, 2021).
+
+### *Overfitting*
+
+Overfitting is when a machine learning model is too focused on the training data it's seen before, so it struggles to make accurate predictions for new data. It's like a student who memorizes answers but can't solve new problems (Muralidhar, 2023).
+
+Reasons behind overfitting:
+    1. Using a complex model for a simple problem which picks up the noise from the data. Example: Fitting a neural network to the Iris dataset.
+    2. Small datasets, as the training set may not be a right representation of the universe (What Is Overfitting? - Overfitting in Machine Learning Explained - AWS, n.d.).
+
+For example, a model trained to find dogs in outdoor photos might miss dogs indoors because it learned to look for grass.
+
+To spot overfitting, we test the model with more diverse data. One method is called K-fold cross-validation, where we split the training data into subsets and test the model's performance on each.
+
+To prevent overfitting, we can use strategies like early stopping, where we pause training before the model learns too much noise. Pruning focuses on important features and ignores irrelevant ones (Muralidhar, 2023).
+
+## Changing the hyperparameters of the models
+
+In this project we will be changing manually some of the hyperparameters of the best performing model within each specific dataset. Those two hyperparameters will be number of estimators and the maximum depth, both at the Random Forest Classifier, and Gradient Boosting Classifier. So, before we delve with the project we first should know that what are those hyperparameters specifically.
+
+### Random Forest Classifier Hyperparameters
+
+<row>
+    <entry></entry> 
+</row>
+
+ - ***Number of estimators*** - According to (Scikit-learn, 2018) it is "the number of trees in the forest. The default number of estimators is 100". 
+
+ - ***Maximum depth*** - According to (Scikit-learn, 2018) it is "the maximum depth of the tree. If None, then nodes are expanded until all leaves are pure or until all leaves contain less than min_samples_split samples. The default maximum depth is None".
+
+ <row>
+    <entry></entry> 
+</row>
+
+### Gradient Boosting Classifier
+
+<row>
+    <entry></entry> 
+</row>
+
+ - ***Number of estimators*** - According to (3.2.4.3.5. Sklearn.ensemble.GradientBoostingClassifier — Scikit-Learn 0.20.3 Documentation, 2009) it is "The number of boosting stages to perform. Gradient boosting is fairly robust to over-fitting so a large number usually results in better performance. Values must be in the range 1 to infinity. The default number of estimators is 100".
+
+ - ***Maximum depth*** - According to (3.2.4.3.5. Sklearn.ensemble.GradientBoostingClassifier — Scikit-Learn 0.20.3 Documentation, 2009) it is "the maximum depth of the individual regression estimators. The maximum depth limits the number of nodes in the tree. The default maximum depth is 3".
+
+```{python}
+
+#| label: packages-data
+#| echo: false
+#| message: false
+#| include: false
+
+#Importing the needed libraries only in this code chunk
+
+import pandas as pd
+import numpy as np
+import seaborn as sns
+import matplotlib.pyplot as plt
+from matplotlib import pyplot as plt
+import plotly.express as px
+import plotly.graph_objects as go
+import plotly.io as pio
+from plotly.subplots import make_subplots
+
+import time
+import warnings
+warnings.filterwarnings('ignore')
+
+
+from sklearn.linear_model import LogisticRegression
+from sklearn.ensemble import RandomForestClassifier, AdaBoostClassifier, GradientBoostingClassifier
+from sklearn.neighbors import KNeighborsClassifier
+from sklearn.tree import DecisionTreeClassifier
+from sklearn import metrics
+from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score, roc_auc_score, classification_report, roc_curve, confusion_matrix
+from sklearn.preprocessing import StandardScaler, LabelEncoder
+from sklearn.decomposition import PCA
+from sklearn.model_selection import train_test_split, cross_val_score, GridSearchCV, RandomizedSearchCV, LearningCurveDisplay, ShuffleSplit
+from sklearn.feature_selection import SelectKBest, f_classif
+from sklearn.utils import resample
+from itertools import cycle
+from scipy.stats import randint
+import math
+
+```
+
+```{python}
+
+#| label: Loading the data
+#| echo: false
+#| message: false
+#| include: false
+
+weather = pd.read_csv('Datasets/weatherAUS.csv', sep=",", header=0, index_col=False)
+
+cardio = pd.read_csv('Datasets/CVD_cleaned.csv', sep=",", header=0, index_col=False)
+
+hotel = pd.read_csv('Datasets/Hotel Reservations.csv', sep=",", header=0, index_col=False)
+
+```
+
+# Business Sector: Hotel Reservation Dataset 
+
+## Hotel: Data Overview
+
+The Hotel Reservations Dataset was taken from Kaggle (available from this link: *https://www.kaggle.com/datasets/ahsan81/hotel-reservations-classification-dataset*). This dataset has information related to hotel bookings from July of 2017 till December of 2018. It consists of 36,275 observations, each representing a unique booking. The dataset covers 19 different attributes that provide insights into the booking patterns, guest preferences, and hotel operations.
+
+Below, we will find the table and the meaning of each of the variables in this dataset:
+
+| Column Name                  | Meaning                                                                                      |
+|------------------------------|----------------------------------------------------------------------------------------------|
+| **Booking_ID**               | Unique identifier for each booking                                                          |
+| **no_of_adults**             | Number of adults included in the booking                                                     |
+| **no_of_children**           | Number of children included in the booking                                                   |
+| **no_of_weekend_nights**     | Number of weekend nights (Saturday or Sunday) the guest stayed or booked to stay at the hotel |
+| **no_of_week_nights**        | Number of weeknights (Monday to Friday) the guest stayed or booked to stay at the hotel      |
+| **type_of_meal_plan**        | Type of meal plan booked by the guest                                                         |
+| **required_car_parking_space** | Indicates whether the guest required a parking space (0 - No, 1- Yes)                        |
+| **room_type_reserved**       | Type of room booked by the guest, ciphered (encoded) by INN Hotels                           |
+| **lead_time**                | Number of days between the booking date and the arrival date                                 |
+| **arrival_year**             | Year of the guest's arrival                                                                  |
+| **arrival_month**            | Month of the guest's arrival                                                                 |
+| **arrival_date**             | Day of the month the guest arrived                                                           |
+| **market_segment_type**      | Segment to which the booking belongs, indicating the source or market type of the booking    |
+| **repeated_guest**           | Indicates whether the guest is a repeated visitor (1 for repeated, 0 for new)                |
+| **no_of_previous_cancellations** | Number of previous bookings canceled by the guest                                          |
+| **no_of_previous_bookings_not_canceled** | Number of previous bookings not canceled by the guest                                 |
+| **avg_price_per_room**       | Average price per room for the booking                                                       |
+| **no_of_special_requests**   | Number of special requests made by the guest (e.g. high floor, view from the room, etc)      |
+| **booking_status**           | Indicates if the booking was canceled or not                                                 |
+
+
+## Hotel: Preprocessing Steps
+
+```{python}
+#| label: hotel head description
+#| echo: false
+#| message: true
+#| include: false
+hotel.head(5)
+```
+
+```{python}
+#| label: hotel nunique
+#| echo: false
+#| message: true
+#| include: false
+hotel.nunique()
+```
+
+```{python}
+#| label: hotel info
+#| echo: false
+#| message: true
+#| include: false
+hotel.info()
+```
+
+```{python}
+#| label: hotel describe
+#| echo: false
+#| message: true
+#| include: false 
+hotel.describe()
+```
+
+We can see that Booking_ID(nunique=36275), type_of_meal_plan(nunique=4), room_type_reserved(nunique=7), market_segment_type(nunique=5) and target variable booking_status(nunique=2) are all object variables. Therefore for some of them we can do Label Encoding to help our machine learning models in the next steps. Moreover, we will delete the first column "Booking_ID" because it doesnt have any importance for our analysis.
+
+```{python}
+#| label: hotel - dropping the 'Booking ID' column
+#| echo: false
+#| message: true
+#| include: false
+hotel.drop(columns=['Booking_ID'], inplace=True)
+```
+
+For now, we want to check if there are any missing values in this data set:
+```{python}
+#| label: hotel - checking for missing values
+#| echo: false
+hotel.isna().sum()
+```
+
+From this, we can see that there are no missing values in this data set, so for now we are not going to remove anything else.
+
+### Label Encoding
+
+Now, we want to use Label Encoding for the variables: type_of_meal_plan, room_type_reserved, market_segment_type and booking_status.
+```{python}
+#| label: hotel - label encoding
+#| echo: false
+#| message: true
+meal_plan_mapping = {
+    "Not Selected": 0,
+    "Meal Plan 1": 1,
+    "Meal Plan 2": 2,
+    "Meal Plan 3": 3
+}
+room_reserved_mapping = {
+    "Room_Type 1": 1,
+    "Room_Type 2": 2,
+    "Room_Type 3": 3,
+    "Room_Type 4": 4,
+    "Room_Type 5": 5,
+    "Room_Type 6": 6,
+    "Room_Type 7": 7
+}
+market_segment_mapping = {
+    "Offline": 0,
+    "Online": 1,
+    "Corporate": 2,
+    "Aviation": 3,
+    "Complementary": 4
+}
+booking_status_mapping = {
+    "Not_Canceled": 0,
+    "Canceled": 1,
+}
+
+# mapping the values of the columns
+hotel['type_of_meal_plan'] = hotel['type_of_meal_plan'].map(meal_plan_mapping)
+hotel['room_type_reserved'] = hotel['room_type_reserved'].map(room_reserved_mapping)
+hotel['market_segment_type'] = hotel['market_segment_type'].map(market_segment_mapping)
+hotel['booking_status'] = hotel['booking_status'].map(booking_status_mapping)
+
+# printing the updated unique values to verify the label encoding
+print("Unique Values of type_of_meal_plan:")
+print(hotel['type_of_meal_plan'].unique())
+
+print("Unique Values of room_type_reserved:")
+print(hotel['room_type_reserved'].unique())
+
+print("Unique Values of market_segment_type:")
+print(hotel['market_segment_type'].unique())
+
+print("Unique Values of booking_status:")
+print(hotel['booking_status'].unique())
+```
+
+```{python}
+#| label: hotel - info numerical
+#| echo: false
+#| message: true
+#| include: false
+hotel.info()
+```
+
+Now, all the variables in our dataset are numerical.
+
+However, we have 3 variables (arrival_date, arrival_month, arrival_year) which have to do with the date of the arrival, therefore we want to merge the columns into one date column, and drop these 3 unnecessary columns (arrival_year, arrival_month, arrival_date).
+
+```{python}
+#| label: hotel - date to string and then remove date
+#| #| echo: false
+#| message: true
+#| include: false
+# converting 'arrival_year', 'arrival_month', and 'arrival_date' to string and concatenate them
+date_str = hotel['arrival_date'].astype(str) + '-' + hotel['arrival_month'].astype(str) + '-' + hotel['arrival_year'].astype(str)
+
+# errors='coerce' replaces invalid dates with NaT (Not a Time)
+hotel['arrival_date_full'] = pd.to_datetime(date_str, format='%d-%m-%Y', errors='coerce')
+
+# dropping the original date columns
+hotel.drop(columns=['arrival_year', 'arrival_month', 'arrival_date'], inplace=True)
+```
+
+```{python}
+#| label: hotel - head to 5
+#| echo: false
+hotel.head(5)
+```
+
+## Hotel: Exploratory Data Analysis
+
+### Check whether the dataset is imbalanced
+Now we want to see if our data is balanced or not:
+```{python}
+#| label: hotel - checking class proportions
+#| message: false
+#| echo: false
+class_distribution = hotel['booking_status'].value_counts()
+class_proportions = hotel['booking_status'].value_counts(normalize=True)
+
+imbalance_ratio = class_distribution[1] / class_distribution[0]
+
+print("Class Distribution:")
+print(class_distribution)
+
+print("\nClass Proportions:")
+print(class_proportions)
+
+print("\nImbalance Ratio (Class 1 / Class 0):", imbalance_ratio)
+```
+
+According to this,  with Class Proportions of 0 (Not cancelled) at 67% and 1 (Cancelled) at 33%, it appears that our dataset is not significantly imbalanced. Therefore, we can proceed with our analysis.
+
+### Booking Status Over Time
+
+Now, we want to use Plotly Express to visualize the booking status over time (for the years 2017 and 2018). We filter the dataset to isolate records for each respective year and then create line plots to display the trend of booking status over time:
+```{python}
+#| label: hotel - date to string to visualize 
+#| echo: false
+# extracting month from the arrival date and convert to string
+hotel['arrival_month'] = hotel['arrival_date_full'].dt.strftime('%Y-%m')
+
+# creating a dataframe with arrival month and booking status
+booking_status_df = hotel[['arrival_month', 'booking_status']].copy()
+
+# grouping by arrival month and booking status, counting occurrences, and unstacking to separate booking statuses
+booking_status_count = booking_status_df.groupby(['arrival_month', 'booking_status']).size().unstack(fill_value=0)
+
+# calculating total bookings (sum of bookings and cancellations) for each month
+booking_status_count['Total Bookings'] = booking_status_count.sum(axis=1)
+
+# plotting
+fig = px.line(booking_status_count, x=booking_status_count.index, y=booking_status_count.columns,
+              title='Booking Status Over Time', labels={'arrival_month': 'Month', 'value': 'Count'},
+              template='plotly_dark')
+
+# adding a line for the total bookings per month
+fig.add_scatter(x=booking_status_count.index, y=booking_status_count['Total Bookings'],
+                mode='lines', name='Total Bookings', line_color='green')
+
+# removing the duplicate legend entry for "Total Bookings"
+fig.update_traces(showlegend=False, selector=dict(name='Total Bookings'))
+
+# adding annotation to explain the green line
+fig.add_annotation(xref='paper', yref='paper', x=0.95, y=0.05,
+                   text='Total Bookings (Green line) = Sum of bookings and cancellations per month',
+                   showarrow=False, font=dict(color='black', size=12), align='right',)
+
+# the layout
+fig.update_layout(xaxis_title='Month', yaxis_title='Count', legend_title='Booking Status',
+                  width=1000, height=600, xaxis={'tickmode': 'array', 'tickvals': booking_status_count.index})
+
+fig.show()
+```
+
+The green line presents the Total of Bookings, the blue line presents the Non-Cancelled Bookings, and the red line the Cancelled Bookings.
+
+As we can see from this visualization, the number of non-cancelled bookings didn't change much between 2017 and 2018, while the number of cancelled bookings did. It seems that the number of total bookings dropped down quite significantly from October 2017 and started to get back on track from January 2018. During this period the number of cancelled bookings was nearly zero, that's why the graph lines of Total Booking and Non-Cancelled Bookings almost overlapping. Moreover, the number of cancelled bookings increased as the total number of bookings increased. 
+
+While the blue line or "Non-Cancelled Bookings" are considered as "Neto Bookings" because these are calculated by subtracting the number of Cancelled Bookings from the Total Bookings. We observe a significant drop in Net Bookings from **1611** on October 1, 2017, to **620** on November 1, 2017. Following this decline, Net Bookings began to gradually increase until March 2018. After March 2018, the Net Bookings remained relatively stable for the subsequent months of 2018, therefore we can state that there doesn't appear to be any anomalies.
+
+### Correlation Heatmap for the Hotel Dataset - numerical features
+```{python}
+#| label: hotel - correlation heatmap
+#| echo: false
+# calculating correlation matrix
+correlation = hotel.corr().round(2)
+
+# creating heatmap
+fig = go.Figure(data=go.Heatmap(
+    z=correlation.values,
+    x=correlation.index,
+    y=correlation.columns,
+    colorscale='RdBu',
+    colorbar=dict(title='Correlation', tickvals=[-1, -0.5, 0, 0.5, 1]),  # adjusting colorbar ticks for better readability
+    zmin=-1,  # setting minimum value of the color range
+    zmax=1,   # setting maximum value of the color range
+))
+
+# the layout
+fig.update_layout(
+    title='Correlation Heatmap for the Hotel Dataset',
+    width=800,
+    height=700,
+    xaxis=dict(title='Features'),
+    yaxis=dict(title='Features'),
+    margin=dict(l=100, r=100, t=100, b=100),
+)
+fig.show()
+```
+
+In this heatmap we can see that there are much variables that are highly correlated to each other.
+For example, **booking_status** is moderately positively correlated with the **lead_time**, which means if the guests books for a later arrival day, it will be more likely that the booking will be cancelled. On the other hand, if the guest books at the last minute, it will be more likely that the booking will be cancelled. 
+We also have the **room_type_reserved** positivey correlated with **avg_price_per_room**, which is obvious, the better the room is the higher is going to be the price (means that Room 7 is quite more premium than Room 1).
+We also have **repeated_guest** positively correlated with **no_of_previous_bookings_not_canceled**, which is also clear, since returning guests tend to have a higher number of previous bookings that were not canceled, indicating their satisfaction and loyalty. Moreover, guests who have cancelled ten to not book again.
+
+### Boxplot of the numerical features for the Hotel Dataset
+This next code shows boxplots to visualize the distribution of numerical variables in the hotel dataset.
+```{python}
+#| label: hotel - visualizing the boxplots for the numerical variables of the hotel dataset
+#| echo: false
+numerical_columns_hotel = hotel.select_dtypes(include=['int64', 'float64']).columns
+num_plots_per_row = 3
+num_rows = -(-len(numerical_columns_hotel) // num_plots_per_row)  
+
+plt.figure(figsize=(20, 4 * num_rows))
+
+for i, column in enumerate(numerical_columns_hotel, start=1):
+    plt.subplot(num_rows, num_plots_per_row, i)
+    sns.boxplot(x=hotel[column], palette='Set3')
+    plt.title(f"Boxplot for {column}")
+
+plt.tight_layout()
+plt.show()
+```
+
+After looking at the boxplots:
+Most of the boxplots seem normal, but one stands out: the average price. It's boxplot has an outlier around 500. This comes from a canceled booking, which means the person didn't stay at the hotel. We decide to keep it in our data because it's important for the model to learn from all kinds of situations.
+Another number we find odd is the count of children in some bookings. We see some with 9 or 10 children. This seems strange for a hotel booking, so we decide to remove those from our data.
+
+```{python}
+#| label: hotel - removing rows where no_of_children equals 9 or 10
+#| echo: false
+#| include: false
+hotel = hotel[(hotel['no_of_children'] != 9) & (hotel['no_of_children'] != 10)]
+```
+
+### Histogram for the numerical features for the Hotel Reservations Dataset
+
+In order to see the skewness of the numerical features we need to plot histograms for each of the variables. If we see that a particular one of the variables are skewed that we can use the logarithmic properties in order to make that particular feature normally distributed.
+
+```{python}
+#| label: hotel - histograms of numerical variables
+#| echo: false
+plt.figure(figsize=(20, 4 * num_rows))
+
+for i, column in enumerate(numerical_columns_hotel, start=1):
+    plt.subplot(num_rows, num_plots_per_row, i)
+    sns.histplot(x=hotel[column], palette='Set3', kde=True)
+    plt.title(f"Histogram for {column}")  
+
+plt.tight_layout()
+plt.show()
+```
+
+From here, wer can see that only the variable lead_time is skewed (positively). Therefore we want to use log transformation to it to make it normally distributed.
+
+```{python}
+#| label: hotel - lead_time log
+#| echo: false
+#| include: false
+hotel['lead_time_log'] = np.log1p(hotel['lead_time'])
+```
+
+```{python}
+#| label: hotel - lead_time log histogram
+#| echo: false
+plt.figure(figsize=(8, 6))
+sns.histplot(hotel['lead_time_log'], kde=True, color='skyblue')
+plt.title('Histogram of lead_time_log')
+plt.xlabel('Lead Time (Log Transformed)')
+plt.ylabel('Frequency')
+plt.show()
+```
+
+Now, we want to remove the lead_time variable from the data set and only use the log transformed one for our analysis.
+
+```{python}
+#| label: hotel - lead_time drop
+#| echo: false
+#| include: false
+hotel.drop(columns=['lead_time'], inplace=True)
+```
+
+## Hotel: Modeling
+
+### Modeling Summary
+
+For this part of the project, we explore various machine learning models to predict hotel booking_status. We start by preprocessing the data, including splitting it into training and testing sets,  with a 0.2 ratio, and standardizing the features using StandardScaler. Next, we use the SelectKBest method to identify the top features for modeling. Then, we train multiple classifiers including Logistic Regression, Decision Tree, Random Forest, Gradient Boosting, and KNN classifiers. For each model, we evaluate its performance using metrics such as accuracy, precision, recall, F1-score, and ROC AUC score. Finally, we analyze the results to determine the best-performing model for predicting hotel booking statuses.
+
+```{python}
+#| label: hotel data all results table save it
+#| echo: false
+#| message: true
+#| include: true
+
+results_hotel = pd.read_csv("photoDF/results_hotel_randomforest.csv")
+
+results_hotel
+```
+
+From this final table containing all the results from the models we used, we can observe that the Random Forest Classifier (which performs almost the same as the Random Forest Scaled) demonstrates the best performance for this dataset. It achieved the highest scores across all measures: 
+***Accuracy*** (~89%), which means that the model about 89% correctly predicts whether the booking will be cancelled or not.
+***Precision*** (~85%), which means that out of all the bookings the model predicted as cancelled, 85% of them were actually cancelled.
+***Recall*** (~80%), which means that the model correctly identifies 80% of the actual bookings of cancelled.
+***F1-score*** (~82%), which means that that the model has achieved a pretty good score of precision and recall.
+***ROC&AUC Score*** (~86%), which shows that there is a great discrimination between the positive and negative classes.
+Although it has a ***computational time*** of approximately 4 seconds, this is not considered significant given its best performance.
+
+```{python}
+#| label: hotel - modelling with all models
+#| echo: false
+#| include: false
+#| eval: false
+
+# CODE:
+X = hotel.drop(columns=['booking_status', 'arrival_date_full', 'arrival_month'])
+y = hotel['booking_status']
+
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+
+# initializing the StandardScaler
+scaler = StandardScaler()
+scaler.fit(X_train)
+X_train_scaled = scaler.transform(X_train)
+X_test_scaled = scaler.transform(X_test)
+
+# converting scaled data back to DataFrames
+X_train_scaled_hotel = pd.DataFrame(X_train_scaled, columns=X.columns)
+X_test_scaled_hotel = pd.DataFrame(X_test_scaled, columns=X.columns)
+```
+
+```{python}
+#| label: hotel - initializing seleckbest
+#| echo: false
+#| include: false
+#| eval: false
+
+target_variable = 'booking_status'
+k = 10
+
+X_feature_hotel = hotel.drop(columns=['booking_status', 'arrival_date_full', 'arrival_month'])
+y_feature_hotel = hotel[target_variable]
+
+selector = SelectKBest(score_func=f_classif, k=k)
+X_selected = selector.fit_transform(X_feature_hotel, y_feature_hotel)
+
+selected_feature_indices = selector.get_support(indices=True)
+selected_feature_names = X_feature_hotel.columns[selected_feature_indices].tolist()
+
+print("Selected Features using SelectKBest:")
+print(selected_feature_names)
+```
+
+```{python}
+#| label: hotel - using 10 best features
+#| echo: false
+#| include: false
+#| eval: false
+X_train_featureselection_hotel = X_train.drop(columns = ['no_of_children', 'room_type_reserved', 'no_of_previous_cancellations',  'lead_time_log'])
+X_test_featureselection_hotel = X_test.drop(columns = ['no_of_children', 'room_type_reserved','no_of_previous_cancellations', 'lead_time_log'])
+
+X_train_featureselection_scaled_hotel = X_train_scaled_hotel.drop(columns = ['no_of_children', 'room_type_reserved','no_of_previous_cancellations', 'lead_time_log'])
+X_test_featureselection_scaled_hotel = X_test_scaled_hotel.drop(columns = ['no_of_children', 'room_type_reserved','no_of_previous_cancellations', 'lead_time_log'])
+```
+
+```{python}
+#| label: hotel - logistic regression
+#| echo: false
+#| include: false
+#| eval: false
+start_time = time.time()
+log_model = LogisticRegression()
+log_model.fit(X_train, y_train)
+y_pred = log_model.predict(X_test)
+
+# calculating performance metrics
+accuracy = accuracy_score(y_test, y_pred)
+precision = precision_score(y_test, y_pred)
+recall = recall_score(y_test, y_pred)
+f1 = f1_score(y_test, y_pred)
+auc = roc_auc_score(y_test, y_pred)
+
+end_time = time.time()
+computational_time = end_time - start_time
+
+# creating the performance scores dataframe
+results_hotel = pd.DataFrame(columns=['Model', 'Accuracy', 'Precision', 'Recall', 'F1-score', 'ROC AUC Score', 'Computational Time'])
+
+# appending the metrics to the DataFrame
+results_hotel = results_hotel.append({
+    'Model': 'Logistic Regression Classifier',
+    'Accuracy': accuracy,
+    'Precision': precision,
+    'Recall': recall,
+    'F1-score': f1,
+    'ROC AUC Score': auc,
+    'Computational Time': computational_time
+}, ignore_index=True)
+
+results_hotel
+```
+
+```{python}
+#| label: hotel - logistic regression with scaled data
+#| echo: false
+#| include: false
+#| eval: false
+start_time = time.time()
+log_model.fit(X_train_scaled_hotel, y_train)
+y_pred = log_model.predict(X_test_scaled_hotel)
+
+accuracy = accuracy_score(y_test, y_pred)
+precision = precision_score(y_test, y_pred)
+recall = recall_score(y_test, y_pred)
+f1 = f1_score(y_test, y_pred)
+auc = roc_auc_score(y_test, y_pred)
+
+end_time = time.time()
+computational_time = end_time - start_time
+
+results_hotel = results_hotel.append({
+    'Model': 'Logistic Regression Classifier Scaled',
+    'Accuracy': accuracy,
+    'Precision': precision,
+    'Recall': recall,
+    'F1-score': f1,
+    'ROC AUC Score': auc,
+    'Computational Time': computational_time
+}, ignore_index=True)
+
+results_hotel
+```
+
+```{python}
+#| label: hotel - logistic regression with Feature Selection
+#| echo: false
+#| include: false
+#| eval: false
+start_time = time.time()
+log_model.fit(X_train_featureselection_hotel, y_train)
+y_pred = log_model.predict(X_test_featureselection_hotel)
+
+accuracy = accuracy_score(y_test, y_pred)
+precision = precision_score(y_test, y_pred)
+recall = recall_score(y_test, y_pred)
+f1 = f1_score(y_test, y_pred)
+auc = roc_auc_score(y_test, y_pred)
+
+end_time = time.time()
+computational_time = end_time - start_time
+
+results_hotel = results_hotel.append({
+    'Model': 'Logistic Regression Classifier with Feature Selection',
+    'Accuracy': accuracy,
+    'Precision': precision,
+    'Recall': recall,
+    'F1-score': f1,
+    'ROC AUC Score': auc,
+    'Computational Time': computational_time
+}, ignore_index=True)
+
+results_hotel
+```
+
+```{python}
+#| label: hotel - logistic regression with feature selection scaled
+#| echo: false
+#| include: false
+#| eval: false
+start_time = time.time()
+log_model.fit(X_train_featureselection_scaled_hotel, y_train)
+y_pred = log_model.predict(X_test_featureselection_scaled_hotel)
+
+accuracy = accuracy_score(y_test, y_pred)
+precision = precision_score(y_test, y_pred)
+recall = recall_score(y_test, y_pred)
+f1 = f1_score(y_test, y_pred)
+auc = roc_auc_score(y_test, y_pred)
+
+end_time = time.time()
+computational_time = end_time - start_time
+
+results_hotel = results_hotel.append({
+    'Model': 'Logistic Regression Classifier with Feature Selection Scaled',
+    'Accuracy': accuracy,
+    'Precision': precision,
+    'Recall': recall,
+    'F1-score': f1,
+    'ROC AUC Score': auc,
+    'Computational Time': computational_time
+}, ignore_index=True)
+
+results_hotel
+```
+
+```{python}
+#| label: hotel - decision tree classifier
+#| echo: false
+#| include: false
+#| eval: false
+start_time = time.time()
+dt_clf = DecisionTreeClassifier()
+dt_clf.fit(X_train, y_train)
+y_pred = dt_clf.predict(X_test)
+
+accuracy = accuracy_score(y_test, y_pred)
+precision = precision_score(y_test, y_pred)
+recall = recall_score(y_test, y_pred)
+f1 = f1_score(y_test, y_pred)
+auc = roc_auc_score(y_test, y_pred)
+
+end_time = time.time()
+computational_time = end_time - start_time
+
+results_hotel = results_hotel.append({
+    'Model': 'Decision Tree Classifier',
+    'Accuracy': accuracy,
+    'Precision': precision,
+    'Recall': recall,
+    'F1-score': f1,
+    'ROC AUC Score': auc,
+    'Computational Time': computational_time
+}, ignore_index=True)
+
+results_hotel
+```
+
+```{python}
+#| label: hotel - decision tree classifier with the scaled data
+#| echo: false
+#| include: false
+#| eval: false
+start_time = time.time()
+dt_clf.fit(X_train_scaled_hotel, y_train)
+y_pred = dt_clf.predict(X_test_scaled_hotel)
+
+accuracy = accuracy_score(y_test, y_pred)
+precision = precision_score(y_test, y_pred)
+recall = recall_score(y_test, y_pred)
+f1 = f1_score(y_test, y_pred)
+auc = roc_auc_score(y_test, y_pred)
+
+end_time = time.time()
+computational_time = end_time - start_time 
+
+results_hotel = results_hotel.append({
+    'Model': 'Decision Tree Classifier Scaled',
+    'Accuracy': accuracy,
+    'Precision': precision,
+    'Recall': recall,
+    'F1-score': f1,
+    'ROC AUC Score': auc,
+    'Computational Time': computational_time
+}, ignore_index=True)
+
+results_hotel
+```
+
+```{python}
+#| label: hotel - decision tree classifier with feature selection
+#| echo: false
+#| include: false
+#| eval: false
+start_time = time.time()
+dt_clf.fit(X_train_featureselection_hotel, y_train)
+y_pred = dt_clf.predict(X_test_featureselection_hotel)
+
+accuracy = accuracy_score(y_test, y_pred)
+precision = precision_score(y_test, y_pred)
+recall = recall_score(y_test, y_pred)
+f1 = f1_score(y_test, y_pred)
+auc = roc_auc_score(y_test, y_pred)
+
+end_time = time.time()
+computational_time = end_time - start_time 
+
+results_hotel = results_hotel.append({
+    'Model': 'Decision Tree Classifier with Feature Selection',
+    'Accuracy': accuracy,
+    'Precision': precision,
+    'Recall': recall,
+    'F1-score': f1,
+    'ROC AUC Score': auc,
+    'Computational Time': computational_time
+}, ignore_index=True)
+
+results_hotel
+```
+
+```{python}
+#| label: hotel - decision tree classifier with feature selection scaled
+#| echo: false
+#| include: false
+#| eval: false
+start_time = time.time()
+dt_clf.fit(X_train_featureselection_scaled_hotel, y_train)
+y_pred = dt_clf.predict(X_test_featureselection_scaled_hotel)
+
+accuracy = accuracy_score(y_test, y_pred)
+precision = precision_score(y_test, y_pred)
+recall = recall_score(y_test, y_pred)
+f1 = f1_score(y_test, y_pred)
+auc = roc_auc_score(y_test, y_pred)
+
+end_time = time.time()
+computational_time = end_time - start_time 
+
+results_hotel = results_hotel.append({
+    'Model': 'Decision Tree Classifier with Feature Selection Scaled',
+    'Accuracy': accuracy,
+    'Precision': precision,
+    'Recall': recall,
+    'F1-score': f1,
+    'ROC AUC Score': auc,
+    'Computational Time': computational_time
+}, ignore_index=True)
+
+results_hotel
+```
+
+```{python}
+#| label: hotel - random forest classifier
+#| echo: false
+#| include: false
+#| eval: false
+start_time = time.time()
+model_rf = RandomForestClassifier()
+model_rf.fit(X_train, y_train)
+y_pred = model_rf.predict(X_test)
+
+accuracy = accuracy_score(y_test, y_pred)
+precision = precision_score(y_test, y_pred)
+recall = recall_score(y_test, y_pred)
+f1 = f1_score(y_test, y_pred)
+auc = roc_auc_score(y_test, y_pred)
+
+end_time = time.time()
+computational_time = end_time - start_time
+
+results_hotel = results_hotel.append({
+    'Model': 'Random Forest Classifier',
+    'Accuracy': accuracy,
+    'Precision': precision,
+    'Recall': recall,
+    'F1-score': f1,
+    'ROC AUC Score': auc,
+    'Computational Time': computational_time
+}, ignore_index=True)
+
+results_hotel
+```
+
+```{python}
+#| label: hotel - random forest classifier with scaled data
+#| echo: false
+#| include: false
+#| eval: false
+start_time = time.time()
+model_rf.fit(X_train_scaled_hotel, y_train)
+y_pred = model_rf.predict(X_test_scaled_hotel)
+
+accuracy = accuracy_score(y_test, y_pred)
+precision = precision_score(y_test, y_pred)
+recall = recall_score(y_test, y_pred)
+f1 = f1_score(y_test, y_pred)
+auc = roc_auc_score(y_test, y_pred)
+
+end_time = time.time()
+computational_time = end_time - start_time
+
+results_hotel = results_hotel.append({
+    'Model': 'Random Forest Classifier Scaled',
+    'Accuracy': accuracy,
+    'Precision': precision,
+    'Recall': recall,
+    'F1-score': f1,
+    'ROC AUC Score': auc,
+    'Computational Time': computational_time
+}, ignore_index=True)
+
+results_hotel
+```
+
+```{python}
+#| label: hotel - random forest classifier with feature selection
+#| echo: false
+#| include: false
+#| eval: false
+start_time = time.time()
+model_rf.fit(X_train_featureselection_hotel, y_train)
+y_pred = model_rf.predict(X_test_featureselection_hotel)
+
+accuracy = accuracy_score(y_test, y_pred)
+precision = precision_score(y_test, y_pred)
+recall = recall_score(y_test, y_pred)
+f1 = f1_score(y_test, y_pred)
+auc = roc_auc_score(y_test, y_pred)
+
+end_time = time.time()
+computational_time = end_time - start_time
+
+results_hotel = results_hotel.append({
+    'Model': 'Random Forest Classifier with Feature Selection',
+    'Accuracy': accuracy,
+    'Precision': precision,
+    'Recall': recall,
+    'F1-score': f1,
+    'ROC AUC Score': auc,
+    'Computational Time': computational_time
+}, ignore_index=True)
+
+results_hotel
+```
+
+```{python}
+#| label: hotel - random forest classifier with feature selection scaled
+#| echo: false
+#| include: false
+#| eval: false
+start_time = time.time()
+model_rf.fit(X_train_featureselection_scaled_hotel, y_train)
+y_pred = model_rf.predict(X_test_featureselection_scaled_hotel)
+
+accuracy = accuracy_score(y_test, y_pred)
+precision = precision_score(y_test, y_pred)
+recall = recall_score(y_test, y_pred)
+f1 = f1_score(y_test, y_pred)
+auc = roc_auc_score(y_test, y_pred)
+
+end_time = time.time()
+computational_time = end_time - start_time
+
+results_hotel = results_hotel.append({
+    'Model': 'Random Forest Classifier with Feature Selection Scaled',
+    'Accuracy': accuracy,
+    'Precision': precision,
+    'Recall': recall,
+    'F1-score': f1,
+    'ROC AUC Score': auc,
+    'Computational Time': computational_time
+}, ignore_index=True)
+
+results_hotel
+```
+
+```{python}
+#| label: hotel - gradient boosting classifier
+#| echo: false
+#| include: false
+#| eval: false
+start_time = time.time()
+gb_classifier = GradientBoostingClassifier()
+gb_classifier.fit(X_train, y_train)
+y_pred_gb = gb_classifier.predict(X_test)
+
+accuracy_gb = accuracy_score(y_test, y_pred_gb)
+precision_gb = precision_score(y_test, y_pred_gb)
+recall_gb = recall_score(y_test, y_pred_gb)
+f1_gb = f1_score(y_test, y_pred_gb)
+auc_gb = roc_auc_score(y_test, y_pred_gb)
+
+end_time = time.time()
+computational_time = end_time - start_time 
+
+results_hotel = results_hotel.append({
+    'Model': 'Gradient Boosting Classifier',
+    'Accuracy': accuracy_gb,
+    'Precision': precision_gb,
+    'Recall': recall_gb,
+    'F1-score': f1_gb,
+    'ROC AUC Score': auc_gb,
+    'Computational Time': computational_time
+}, ignore_index=True)
+
+results_hotel
+```
+
+```{python}
+#| label: hotel - gradient boosting classifier with scaled data
+#| echo: false
+#| include: false
+#| eval: false
+start_time = time.time()
+gb_classifier = GradientBoostingClassifier()
+gb_classifier.fit(X_train_scaled_hotel, y_train)
+y_pred_gbs = gb_classifier.predict(X_test_scaled_hotel)
+
+accuracy_gbs = accuracy_score(y_test, y_pred_gbs)
+precision_gbs = precision_score(y_test, y_pred_gbs)
+recall_gbs = recall_score(y_test, y_pred_gbs)
+f1_gbs = f1_score(y_test, y_pred_gbs)
+auc_gbs = roc_auc_score(y_test, y_pred_gbs)
+
+end_time = time.time()
+computational_time = end_time - start_time
+
+results_hotel = results_hotel.append({
+    'Model': 'Gradient Boosting Classifier Scaled',
+    'Accuracy': accuracy_gbs,
+    'Precision': precision_gbs,
+    'Recall': recall_gbs,
+    'F1-score': f1_gbs,
+    'ROC AUC Score': auc_gbs,
+    'Computational Time': computational_time
+}, ignore_index=True)
+
+results_hotel
+```
+
+```{python}
+#| label: hotel - gradient boosting classifier with feature selection
+#| echo: false
+#| include: false
+#| eval: false
+start_time = time.time()
+gb_classifier = GradientBoostingClassifier()
+gb_classifier.fit(X_train_featureselection_hotel, y_train)
+y_pred_gbs = gb_classifier.predict(X_test_featureselection_hotel)
+
+
+accuracy_gbs = accuracy_score(y_test, y_pred_gbs)
+precision_gbs = precision_score(y_test, y_pred_gbs)
+recall_gbs = recall_score(y_test, y_pred_gbs)
+f1_gbs = f1_score(y_test, y_pred_gbs)
+auc_gbs = roc_auc_score(y_test, y_pred_gbs)
+
+end_time = time.time()
+computational_time = end_time - start_time
+
+results_hotel = results_hotel.append({
+    'Model': 'Gradient Boosting Classifier with Feature Selection',
+    'Accuracy': accuracy_gbs,
+    'Precision': precision_gbs,
+    'Recall': recall_gbs,
+    'F1-score': f1_gbs,
+    'ROC AUC Score': auc_gbs,
+    'Computational Time': computational_time
+}, ignore_index=True)
+
+results_hotel
+```
+
+```{python}
+#| label: hotel - gradient boosting classifier with feature selection scaled
+#| echo: false
+#| include: false
+#| eval: false
+start_time = time.time()
+gb_classifier = GradientBoostingClassifier()
+gb_classifier.fit(X_train_featureselection_scaled_hotel, y_train)
+y_pred_gbs = gb_classifier.predict(X_test_featureselection_scaled_hotel)
+
+accuracy_gbs = accuracy_score(y_test, y_pred_gbs)
+precision_gbs = precision_score(y_test, y_pred_gbs)
+recall_gbs = recall_score(y_test, y_pred_gbs)
+f1_gbs = f1_score(y_test, y_pred_gbs)
+auc_gbs = roc_auc_score(y_test, y_pred_gbs)
+
+end_time = time.time()
+computational_time = end_time - start_time
+
+results_hotel = results_hotel.append({
+    'Model': 'Gradient Boosting Classifier with Feature Selection Scaled',
+    'Accuracy': accuracy_gbs,
+    'Precision': precision_gbs,
+    'Recall': recall_gbs,
+    'F1-score': f1_gbs,
+    'ROC AUC Score': auc_gbs,
+    'Computational Time': computational_time
+}, ignore_index=True)
+
+results_hotel
+```
+
+```{python}
+#| label: hotel - knn classifier
+#| echo: false
+#| include: false
+#| eval: false
+X_test = np.array(X_test)
+start_time = time.time()
+knn_classifier = KNeighborsClassifier()
+knn_classifier.fit(X_train, y_train)
+y_pred_knn = knn_classifier.predict(X_test)
+
+accuracy_knn = accuracy_score(y_test, y_pred_knn)
+precision_knn = precision_score(y_test, y_pred_knn)
+recall_knn = recall_score(y_test, y_pred_knn)
+f1_knn = f1_score(y_test, y_pred_knn)
+auc_knn = roc_auc_score(y_test, y_pred_knn)
+
+end_time = time.time()
+computational_time = end_time - start_time
+
+results_hotel = results_hotel.append({
+    'Model': 'KNN Classifier',
+    'Accuracy': accuracy_knn,
+    'Precision': precision_knn,
+    'Recall': recall_knn,
+    'F1-score': f1_knn,
+    'ROC AUC Score': auc_knn,
+    'Computational Time': computational_time
+}, ignore_index=True)
+
+results_hotel
+```
+
+```{python}
+#| label: hotel - knn classifier with scaled data
+#| echo: false
+#| include: false
+#| eval: false
+X_test_scaled_hotel = np.array(X_test_scaled_hotel)
+start_time = time.time()
+knn_classifier.fit(X_train_scaled_hotel, y_train)
+y_pred_knns = knn_classifier.predict(X_test_scaled_hotel)
+
+accuracy_knns = accuracy_score(y_test, y_pred_knns)
+precision_knns = precision_score(y_test, y_pred_knns)
+recall_knns = recall_score(y_test, y_pred_knns)
+f1_knns = f1_score(y_test, y_pred_knns)
+auc_knns = roc_auc_score(y_test, y_pred_knns)
+
+end_time = time.time()
+computational_time = end_time - start_time
+
+results_hotel = results_hotel.append({
+    'Model': 'KNN Classifier Scaled',
+    'Accuracy': accuracy_knns,
+    'Precision': precision_knns,
+    'Recall': recall_knns,
+    'F1-score': f1_knns,
+    'ROC AUC Score': auc_knns,
+    'Computational Time': computational_time
+}, ignore_index=True)
+
+results_hotel
+```
+
+```{python}
+#| label: hotel - knn classifier with feature selection
+#| echo: false
+#| include: false
+#| eval: false
+X_test_featureselection_hotel = np.array(X_test_featureselection_hotel)
+start_time = time.time()
+knn_classifier.fit(X_train_featureselection_hotel, y_train)
+y_pred_knns = knn_classifier.predict(X_test_featureselection_hotel)
+
+accuracy_knns = accuracy_score(y_test, y_pred_knns)
+precision_knns = precision_score(y_test, y_pred_knns)
+recall_knns = recall_score(y_test, y_pred_knns)
+f1_knns = f1_score(y_test, y_pred_knns)
+auc_knns = roc_auc_score(y_test, y_pred_knns)
+
+end_time = time.time()
+computational_time = end_time - start_time
+
+results_hotel = results_hotel.append({
+    'Model': 'KNN Classifier with Feature Selection',
+    'Accuracy': accuracy_knns,
+    'Precision': precision_knns,
+    'Recall': recall_knns,
+    'F1-score': f1_knns,
+    'ROC AUC Score': auc_knns,
+    'Computational Time': computational_time
+}, ignore_index=True)
+
+results_hotel
+```
+
+```{python}
+#| label: hotel - knn classifier with feature selection scaled 
+#| echo: false
+#| include: false
+#| eval: false
+X_test_featureselection_scaled_hotel = np.array(X_test_featureselection_scaled_hotel)
+start_time = time.time()
+knn_classifier.fit(X_train_featureselection_scaled_hotel, y_train)
+y_pred_knns = knn_classifier.predict(X_test_featureselection_scaled_hotel)
+
+accuracy_knns = accuracy_score(y_test, y_pred_knns)
+precision_knns = precision_score(y_test, y_pred_knns)
+recall_knns = recall_score(y_test, y_pred_knns)
+f1_knns = f1_score(y_test, y_pred_knns)
+auc_knns = roc_auc_score(y_test, y_pred_knns)
+
+end_time = time.time()
+computational_time = end_time - start_time
+
+results_hotel = results_hotel.append({
+    'Model': 'KNN Classifier with Feature Selection Scaled',
+    'Accuracy': accuracy_knns,
+    'Precision': precision_knns,
+    'Recall': recall_knns,
+    'F1-score': f1_knns,
+    'ROC AUC Score': auc_knns,
+    'Computational Time': computational_time
+}, ignore_index=True)
+
+results_hotel
+```
+
+```{python}
+#| label: hotel - adaBoost classifier 
+#| echo: false
+#| include: false
+#| eval: false
+start_time = time.time()
+adaboost_classifier = AdaBoostClassifier()
+adaboost_classifier.fit(X_train, y_train)
+y_pred_adaboost = adaboost_classifier.predict(X_test)
+
+accuracy_adaboost = accuracy_score(y_test, y_pred_adaboost)
+precision_adaboost = precision_score(y_test, y_pred_adaboost)
+recall_adaboost = recall_score(y_test, y_pred_adaboost)
+f1_adaboost = f1_score(y_test, y_pred_adaboost)
+auc_adaboost = roc_auc_score(y_test, y_pred_adaboost)
+
+end_time = time.time()
+computational_time = end_time - start_time
+
+results_hotel = results_hotel.append({
+    'Model': 'AdaBoost Classifier',
+    'Accuracy': accuracy_adaboost,
+    'Precision': precision_adaboost,
+    'Recall': recall_adaboost,
+    'F1-score': f1_adaboost,
+    'ROC AUC Score': auc_adaboost,
+    'Computational Time': computational_time
+}, ignore_index=True)
+
+results_hotel
+```
+
+```{python}
+#| label: hotel - adaBoost classifier with scaled data 
+#| echo: false
+#| include: false
+#| eval: false
+start_time = time.time()
+adaboost_classifier.fit(X_train_scaled_hotel, y_train)
+y_pred_adaboost = adaboost_classifier.predict(X_test_scaled_hotel)
+
+accuracy_adaboost = accuracy_score(y_test, y_pred_adaboost)
+precision_adaboost = precision_score(y_test, y_pred_adaboost)
+recall_adaboost = recall_score(y_test, y_pred_adaboost)
+f1_adaboost = f1_score(y_test, y_pred_adaboost)
+auc_adaboost = roc_auc_score(y_test, y_pred_adaboost)
+
+end_time = time.time()
+computational_time = end_time - start_time
+
+results_hotel = results_hotel.append({
+    'Model': 'AdaBoost Classifier Scaled',
+    'Accuracy': accuracy_adaboost,
+    'Precision': precision_adaboost,
+    'Recall': recall_adaboost,
+    'F1-score': f1_adaboost,
+    'ROC AUC Score': auc_adaboost,
+    'Computational Time': computational_time
+}, ignore_index=True)
+
+results_hotel
+```
+
+```{python}
+#| label: hotel - adaBoost classifier with feature selection
+#| echo: false
+#| include: false
+#| eval: false
+start_time = time.time()
+adaboost_classifier.fit(X_train_featureselection_hotel, y_train)
+y_pred_adaboost = adaboost_classifier.predict(X_test_featureselection_hotel)
+
+accuracy_adaboost = accuracy_score(y_test, y_pred_adaboost)
+precision_adaboost = precision_score(y_test, y_pred_adaboost)
+recall_adaboost = recall_score(y_test, y_pred_adaboost)
+f1_adaboost = f1_score(y_test, y_pred_adaboost)
+auc_adaboost = roc_auc_score(y_test, y_pred_adaboost)
+
+end_time = time.time()
+computational_time = end_time - start_time
+
+results_hotel = results_hotel.append({
+    'Model': 'AdaBoost Classifier with Feature Selection',
+    'Accuracy': accuracy_adaboost,
+    'Precision': precision_adaboost,
+    'Recall': recall_adaboost,
+    'F1-score': f1_adaboost,
+    'ROC AUC Score': auc_adaboost,
+    'Computational Time': computational_time
+}, ignore_index=True)
+
+results_hotel
+```
+
+```{python}
+#| label: hotel - adaBoost classifier with feature selection scaled
+#| echo: false
+#| include: false
+#| eval: false
+start_time = time.time()
+adaboost_classifier.fit(X_train_featureselection_scaled_hotel, y_train)
+y_pred_adaboost = adaboost_classifier.predict(X_test_featureselection_scaled_hotel)
+
+accuracy_adaboost = accuracy_score(y_test, y_pred_adaboost)
+precision_adaboost = precision_score(y_test, y_pred_adaboost)
+recall_adaboost = recall_score(y_test, y_pred_adaboost)
+f1_adaboost = f1_score(y_test, y_pred_adaboost)
+auc_adaboost = roc_auc_score(y_test, y_pred_adaboost)
+
+end_time = time.time()
+computational_time = end_time - start_time
+
+results_hotel = results_hotel.append({
+    'Model': 'AdaBoost Classifier with Feature Selection Scaled',
+    'Accuracy': accuracy_adaboost,
+    'Precision': precision_adaboost,
+    'Recall': recall_adaboost,
+    'F1-score': f1_adaboost,
+    'ROC AUC Score': auc_adaboost, 
+    'Computational Time': computational_time
+}, ignore_index=True)
+
+results_hotel
+```
+
+```{python}
+#| label: hotel data results table save it
+#| echo: false
+#| message: true
+#| include: false
+#| eval: false 
+
+# Save the DataFrame to a CSV file
+results_hotel.to_csv('photoDF/results_hotel_randomforest.csv', index=False)
+```
+
+
+### Best Model Performance 
+
+For this dataset, the Random Forest Classifier stood out as the best performer across the different metrics like 'Accuracy', 'Precision', 'Recall', 'F1-score', 'ROC AUC Score', and 'Computational Time'. So, we're going to focus more on this model for the next step of our project. We'll do tasks like Cross-Validation to see if the results of the original version are reliable and consistent, and checking for any signs that our model might be too focused on the training data (over-fitting). 
+
+In this section, we'll rerun the Random Forest Classifier model and compare it with its Cross-Validated version.
+
+```{python}
+#| label: hotel data results table random forest
+#| echo: false
+#| message: true
+#| include: true
+
+results_hotel1 = pd.read_csv("photoDF/results_hotel1_randomforest.csv")
+
+results_hotel1
+```
+
+As we can see, the difference Random Forest model and its Cross Validated version of it, is very small, therefore we can state that the results of Random Forest Classifier are reliable to continue with our anaysis.
+
+```{python}
+#| label: hotel - modelling with the best model
+#| echo: false
+#| include: false
+#| eval: false
+# CODE:
+from sklearn.preprocessing import StandardScaler
+from sklearn.model_selection import train_test_split
+X = hotel.drop(columns=['booking_status', 'arrival_date_full', 'arrival_month'])  # Remove 'booking_status', 'arrival_date_full' and 'arrival_month' columns
+y = hotel['booking_status']
+
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=1)
+```
+
+```{python}
+#| label: hotel - creating a new results dataframe for the performance metrics
+#| echo: false
+#| include: false
+#| eval: false
+results_hotel1 = pd.DataFrame(columns=['Model', 'Accuracy', 'Precision', 'Recall', 'F1-score', 'ROC AUC Score', 'Computational Time'])
+```
+
+```{python}
+#| label: hotel - random forest original vs cross validated version
+#| echo: false
+#| include: false
+#| eval: false
+start_time = time.time()
+model_rf = RandomForestClassifier()
+model_rf.fit(X_train, y_train)
+y_pred = model_rf.predict(X_test)
+
+accuracy = accuracy_score(y_test, y_pred)
+precision = precision_score(y_test, y_pred)
+recall = recall_score(y_test, y_pred)
+f1 = f1_score(y_test, y_pred)
+auc = roc_auc_score(y_test, y_pred)
+
+end_time = time.time()
+computational_time = end_time - start_time
+
+results_hotel1 = results_hotel1.append({
+    'Model': 'Random Forest Classifier',
+    'Accuracy': accuracy,
+    'Precision': precision,
+    'Recall': recall,
+    'F1-score': f1,
+    'ROC AUC Score': auc,
+    'Computational Time': computational_time
+}, ignore_index=True)
+
+# cross validation
+scoring = ['accuracy', 'precision', 'recall', 'f1', 'roc_auc', 'computational_time']
+
+cv_result = {}
+
+for metric in scoring:
+    if metric == 'computational_time':
+        start_time = time.time()
+        cross_val_score(model_rf, X_train, y_train, cv=5, scoring='accuracy')
+        end_time = time.time()
+        cv_result[metric] = end_time - start_time
+    else:
+        scores = cross_val_score(model_rf, X_train, y_train, cv=5, scoring=metric)
+        cv_result[metric] = scores.mean()
+
+# appending cross-validation results to the results DataFrame
+results_hotel1 = results_hotel1.append({
+    'Model': 'Random Forest Classifier (CV)',
+    'Accuracy': cv_result['accuracy'],
+    'Precision': cv_result['precision'],
+    'Recall': cv_result['recall'],
+    'F1-score': cv_result['f1'],
+    'ROC AUC Score': cv_result['roc_auc'],
+    'Computational Time': cv_result['computational_time']
+}, ignore_index=True)
+
+results_hotel1
+```
+
+```{python}
+#| label: hotel data results table random forest save it
+#| echo: false
+#| message: true
+#| include: false
+#| eval: false
+
+# Save the DataFrame to a CSV file
+results_hotel1.to_csv('results_hotel1_randomforest.csv', index=False)
+```
+
+## Hotel: Additional Techiniques
+
+### Learning Curve
+
+In this next code, we are going to check the learning curve of the model depending on the training samples (examples). We are going to show 3 different learning curves, where the first one is the original model, second one has max_depth=10 and n_estimators=100, and third one has max_depth=30 n_estimators=100. We want to compare how these three learning curves look and check if there's overfitting possibilities for these models.
+
+```{python}
+#| label: hotel - learning curve to check overfitting
+#| echo: false
+#| eval: false
+fig, ax = plt.subplots(1, 1, figsize=(10, 6), sharey=True)
+
+common_params = {
+    "X": X,
+    "y": y,
+    "train_sizes": np.linspace(0.1, 1.0, 5),
+    "cv": ShuffleSplit(n_splits=50, test_size=0.2),
+    "score_type": "both",
+    "n_jobs": 4,
+    "line_kw": {"marker": "o"},
+    "std_display_style": "fill_between",
+    "score_name": "Accuracy",
+}
+
+estimator = model_rf  # only the original model_rf
+
+LearningCurveDisplay.from_estimator(estimator, **common_params, ax=ax)
+handles, label = ax.get_legend_handles_labels()
+ax.legend(handles[:2], ["Training Score", "Test Score"])
+ax.set_title(f"Learning Curve for {estimator.__class__.__name__}")
+
+plt.tight_layout()
+plt.savefig('photoDF/learning_curve_hotel.png')
+plt.show()
+```
+
+<a id="figure-1-hotel"></a>
+
+![Hotel Figure 1: Learning curve, through different samples](photoDF/learning_curve_hotel.png)
+
+The learning curve plot, as shown in [Hotel Figure 1](#figure-1-hotel), shows how well the model learns as we give it more examples to study. When we train it with 5000 examples, it gets everything right for the training data, showing it can remember all those examples perfectly. On the other hand, for the testing data, it performs the best when we use all 30,000+ samples from the dataset.
+
+This insight helps us understand that the model is able to perform even better for the testing data if we added more new samples to the data set. Moreover, a more varied dataset can lead to better generalization of the model, enabling it to handle new data more effectively.
+
+
+### Checking for Overfitting
+
+In this step, we want to check overfitting with the Random Forest Classifier Dataset using different settings: max depth ranging from 1 to 30, and the number of estimators set at 50, 100, and 150. We're trying out different setups to see how well the model works with different levels of difficulty. This helps us find the best mix of making the model smart enough without making it too specific to certain cases.
+
+```{python}
+#| label: hotel - learning curve with maxdepth and nestimators
+#| echo: false
+#| include: false
+#| eval: false
+
+# defining metrics and parameters to show
+metrics = ['Accuracy', 'Precision', 'Recall', 'F1 Score', 'ROC AUC Score']
+n_estimators_values = [50, 100, 150]
+max_depth_values = range(1, 31)
+
+# iterating over n_estimators values
+for j in n_estimators_values:
+    plt.figure(figsize=(15, 12))
+    plt.suptitle(f'n_estimators = {j}', fontsize=16)
+    idx = 1
+    for metric in metrics:
+        plt.subplot(3, 2, idx)
+        plt.title(f'{metric} vs Max Depth')
+        plt.xlabel('Max Depth')
+        plt.ylabel(metric)
+        train_scores, test_scores = [], []
+        for i in max_depth_values:
+            # the model
+            model = RandomForestClassifier(n_estimators=j, max_depth=i, min_samples_leaf=1, min_samples_split=2)
+            model.fit(X_train, y_train)
+            # predictions
+            train_yhat = model.predict(X_train)
+            test_yhat = model.predict(X_test)
+            # calculating each metric
+            if metric == 'Accuracy':
+                train_score = accuracy_score(y_train, train_yhat)
+                test_score = accuracy_score(y_test, test_yhat)
+            elif metric == 'Precision':
+                train_score = precision_score(y_train, train_yhat)
+                test_score = precision_score(y_test, test_yhat)
+            elif metric == 'Recall':
+                train_score = recall_score(y_train, train_yhat)
+                test_score = recall_score(y_test, test_yhat)
+            elif metric == 'F1 Score':
+                train_score = f1_score(y_train, train_yhat)
+                test_score = f1_score(y_test, test_yhat)
+            elif metric == 'ROC AUC Score':
+                train_score = roc_auc_score(y_train, train_yhat)
+                test_score = roc_auc_score(y_test, test_yhat)
+            # appending scores
+            train_scores.append(train_score)
+            test_scores.append(test_score)
+        plt.plot(max_depth_values, train_scores, '-o', label='Train')
+        plt.plot(max_depth_values, test_scores, '-o', label='Test')
+        plt.legend()
+        idx += 1
+    plt.tight_layout()
+    plt.show()
+```
+
+<a id="figure-3-hotel"></a>
+
+#### Random Forest Classifier with 50 estimators
+
+![Hotel Figure 3a: Random Forest Performance with 50 estimators and max depth from 1-30](photoDF/learning_curve_n_estimators_50.png)
+
+#### Random Forest Classifier with 100 estimators
+
+![Hotel Figure 3b: Random Forest Performance with 100 estimators and max depth from 1-30](photoDF/learning_curve_n_estimators_100.png)
+
+#### Random Forest Classifier with 150 estimators
+
+![Hotel Figure 3c: Random Forest Performance with 150 estimators and max depth from 1-30](photoDF/learning_curve_n_estimators_150.png)
+
+When exploring different combinations of the Random Forest Classifier's parameters—specifically, the maximum depth and the number of estimators—we analyzed the results depicted in [Hotel Figure 3a), 3b), and 3c)](#figure-3-hotel). We found that increasing the maximum depth generally improved the model's performance on the training set, including metrics like accuracy, precision, recall, F1-score, and ROC AUC score. However, this improvement wasn't as pronounced for the testing set.
+
+The best maximum depth range seemed to be between 10 to 15. In this range, the differences between testing and training scores were smaller compared to maximum depths between 15 to 30.
+
+When considering the number of estimators, there wasn't much difference between having 50, 100, or 150 estimators. It seems that the number of estimators didn't have a significant impact on how well the model learned.
+
+In conclusion, for this model, it appears that any number of estimators between 50 to 150 is suitable. However, a maximum depth in the range of 10 to 15 seems to lead to the most balanced performance between the training and testing datasets.
+
+
+## Hotel: Key Findings
+
+The dataset didn't show class imbalance, with approximately 67% of bookings not being canceled and 33% being canceled.
+
+Visualizing the booking status over time revealed interesting trends. While the number of non-canceled bookings remained relatively stable, the number of canceled bookings varied over time. There were significant drops in net bookings during certain periods, followed by gradual recovery.
+
+The correlation heatmap showed several variables that were highly correlated with each other. For example, lead time was positively correlated with booking status, indicating that longer lead times were associated with a higher likelihood of booking cancellation.
+
+Various machine learning models were evaluated, including Logistic Regression, Decision Tree, Random Forest, Gradient Boosting, and KNN classifiers. Among these, the Random Forest Classifier demonstrated superior performance as the best-performing model for predicting hotel booking statuses. It achieved high scores across various metrics, including accuracy, precision, recall, F1-score, and ROC AUC score.
+
+Learning curves and overfitting analysis were conducted to ensure the model's generalization ability. The results indicated that a maximum depth in the range of 10 to 15 led to balanced performance between training and testing datasets.
+
+# Environment Sector: Weather in Australia Dataset 
+
+## Weather: Data Overview
+
+The Weather in Australia Dataset was taken from Kaggle (available from this link: *https://www.kaggle.com/datasets/jsphyg/weather-dataset-rattle-package*). This dataset contains 145,460 observations and 19 variables for the weather which 14 of them are numerical features and the rest of them are categorical and type date. 
+
+Below, we will find the table and the meaning of each of the variables in this dataset:
+
+| Column Name | Meaning 
+|---|---|
+| **Date** | The date of the observation |
+| **Location** | he common name of the location of the weather station |
+| **MinTemp** | The minimum temperature in degrees celsius | 
+| **MaxTemp** | The maximum temperature in degrees celsius | 
+| **Rainfall** | The amount of rainfall recorded for the day in mm | 
+| **Evaporation** | The so-called Class A  evaporation (mm) in the 24 hours to 9am | 
+| **Sunshine**| The number of hours of bright sunshine in the day | 
+| **WindGustDir** | The direction of the strongest wind gust in the 24 hours to midnight | 
+| **WindGustSpeed** | The speed (km/h) of the strongest wind gust in the 24 hours to midnight |
+| **WindDir9am** | Direction of the wind at 9am |
+| **WindDir3pm** | Direction of the wind at 3pm| 
+| **WindSpeed9am** | Speed of the wind 10 min prior to 9am (km/h) | 
+| **WindSpeed3pm** | Speed of the wind 10 min prior to 3pm (km/h) | 
+| **Humidity9am** | Humidity of the wind at 9am  | 
+| **Humidity3pm**| Humidity of the wind at 3pm  | 
+| **Pressure9am** | Atmospheric pressure at 9am | 
+| **Pressure3pm** | Atmospheric pressure at 3pm |
+| **Cloud9am** | cloud-obscured portions of the sky at 9am (eighths) |
+| **Cloud3pm** | cloud-obscured portions of the sky at 3pm (eighths)| 
+| **Temp9am** | Temperature at 9am (degree Celsius)| 
+| **Temp3pm** | Temperature at 3pm (degree Celsius) | 
+| **RainToday** | If today is rainy then ‘Yes’, if not then ‘No’ | 
+| **RainTomorrow**| Target Variable: If tomorrow is rainy then ‘Yes’, if not then ‘No’ | 
+
+
+## Weather: Preprocessing Steps
+
+```{python}
+#| label: weather data head five
+#| echo: false
+#| message: true
+#| include: false
+weather.head(5)
+```
+
+```{python}
+#| label: weather data unique
+#| echo: false
+#| message: true
+#| include: false
+weather.nunique()
+```
+
+```{python}
+#| label: weather data info
+#| echo: false
+#| message: true
+#| include: false
+weather.info()
+```
+
+```{python}
+#| label: weather data describe
+#| echo: false
+#| message: true
+#| include: false
+weather.describe()
+```
+
+
+```{python}
+#| label: weather data pr steps
+#| echo: false
+#| message: true
+#| include: false
+weather.isna().sum()
+```
+
+```{python}
+#| label: weather data heatmap missing
+#| echo: false 
+
+
+plt.figure(figsize=(10, 6))
+sns.heatmap(weather.isnull(), cmap='viridis', yticklabels=False, cbar=False)
+plt.title('Missing Values in the Weather Dataset')
+plt.show()
+```
+
+ we can see that some of the variables are the type of object, but first let's see the missing values and decide if whether there are any missing values, and if so are we going to delete row-wise or column-wise?
+
+ From the heatmap we can see that the features of the dataset which have more than 50 percent of the total observations as null values are ***Evaporation, Sunshine, Cloud9am and Cloud3pm*** and we decide to remove them from the dataset, since we believe that these variables are not key factors in determining whether it is going to rain tomorrow or not. Moreover, since in this project the focus is not in the implementing different imputation techniques in order to see how well they would perform in different machine learning algorithms, we decide to get rid of them.
+
+ Then we will check if there are any duplicates observations, since they would lead to biased results, therefore we need to delete them.
+
+ And also after deleting the columns, we then need to check also how many missing values in each column we have and we decide now to delete row-wise. If we check the target variable ***'Rain Tomorrow'*** we can see that this feature has 3267 missing observations and therefore we should delete and even if suppose we would have used imputation techniques we should have not impute this column because it will lead to biased results.
+
+ After this preprocessing steps, our dataset now has 112925 rows and 19 features, which is not a big loss of information.
+
+```{python}
+#| label: weather data cleaning
+#| echo: false
+#| message: true
+#| include: false
+
+weather.duplicated().sum()
+weather.drop_duplicates()
+weather.nunique()
+```
+
+```{python}
+#| label: weather data column remove them
+#| echo: false
+#| message: true
+#| include: false
+columns_to_remove = ['Evaporation', 'Sunshine', 'Cloud9am', 'Cloud3pm']  
+
+# Remove the specified columns from the DataFrame
+weather.drop(columns=columns_to_remove, inplace=True)
+
+```
+
+```{python}
+#| label: weather data pre
+#| echo: false
+#| message: true
+#| include: false
+weather.isna().sum()
+```
+
+```{python}
+#| label: weather data prepro
+#| echo: false
+#| message: true
+#| include: false
+weather.head(5)
+
+weather.dropna(axis=0, inplace=True)
+```
+
+```{python}
+#| label: weather data infooo
+#| echo: false
+#| message: false
+#| include: false
+
+weather.info()
+```
+
+## Weather: Exploratory Data Analysis
+
+### Check whether the dataset is imbalanced
+
+Now, we want to see whether the target variable which is ***RainTomorrow*** with value 1 when it will rain, and 0 when it won't rain. We want to see whether there is an imbalance between the two classes.
+
+```{python}
+#| label: weather data imbalanced or not
+#| message: false
+#| include: false
+
+
+# Calculate class distribution
+class_distribution = weather['RainTomorrow'].value_counts()
+
+# Calculate class proportions
+class_proportions = weather['RainTomorrow'].value_counts(normalize=True) * 100
+
+# Create a bar plot
+fig = go.Figure([go.Bar(x=class_distribution.index, y=class_distribution.values, 
+                         text=class_proportions.round(2), textposition='auto',
+                         marker_color=['blue', 'orange'])])
+
+# Update layout
+fig.update_layout(title='Class Distribution of RainTomorrow',
+                  xaxis=dict(title='RainTomorrow Class', tickvals=[0, 1], ticktext=['0', '1']),
+                  yaxis=dict(title=''))
+
+# Show plot
+fig.show()
+
+
+```
+
+
+We can see that the class 0 has 77.84% of the total observations in the dataset and class 1 holds 22.16% of the total observations. 
+
+From this we can say that the dataset is not imbalanced. 
+
+### Correlation Heatmap for the numerical features
+
+After the preprocessing steps we want to see that how correlated are with each other the numerical variables in the dataset. 
+
+```{python}
+#| label: Correlation heatmap for the hotel dataset 
+#| echo: false
+
+
+correlation2 = weather.corr().round(2) # rounding it into 2 decimals 
+
+# Plotting with the Plotly library
+fig = px.imshow(correlation2, x=correlation2.index, y=correlation2.columns, 
+                color_continuous_scale='YlOrBr', labels={'color': 'Correlation'})
+fig.update_layout(title='Correlation Heatmap for the Hotel Dataset', width=600, height=550)
+
+fig.show()
+
+
+```
+
+
+We can see that variables that show the status in different time of the day are strongly correlated with each other, which means that if the temperature is high at 9AM is it expected to be high also during 3PM, and vice versa.
+
+```{python}
+#| label: weather data infoo
+#| echo: false
+#| message: false
+#| include: false
+
+weather.info()
+```
+
+
+```{python}
+#| label: weather headd
+#| echo: false
+#| message: false
+#| include: false
+
+weather.head(5)
+```
+
+### Boxplot of the numerical features 
+
+After that we want to see a little bit more, the distribution of the numerical features and see whether they are any specific outliers and that might have an affect in the overall prediction task. 
+
+```{python}
+#| label: Visualizing the boxplots for the numerical variables of the weather's dataset 
+#| echo: false
+
+
+numerical_columns2 = weather.select_dtypes(include=['int64', 'float64']).columns
+num_plots_per_row = 3
+num_rows = -(-len(numerical_columns2) // num_plots_per_row)  
+
+plt.figure(figsize=(20, 4 * num_rows))
+
+for i, column in enumerate(numerical_columns2, start=1):
+    plt.subplot(num_rows, num_plots_per_row, i)
+    sns.boxplot(x=weather[column], palette='Set3')
+    plt.title(f"Boxplot for {column}")
+
+plt.tight_layout()
+plt.show()
+```
+
+We can see that for the rainfall which is measured in millimetres there are a lot of outliers but the furthest one is 300mm which could indicate a real day when there was raining that amount of rain in a specific area, and then for the wind speed we can see that there are outliers until 80 km/h which could be logical. When looking at each of the variables the outliers make sense, and therefore we do not want them to remove.
+
+### Histogram for the numerical features 
+
+In order to see the skewness of the numerical features we need to plot histograms for each of the variables. 
+
+```{python}
+#| label: weather data histogram
+#| echo: false
+
+
+plt.figure(figsize=(20, 4 * num_rows))
+
+for i, column in enumerate(numerical_columns2, start=1):
+    plt.subplot(num_rows, num_plots_per_row, i)
+    sns.histplot(x=weather[column], palette='Set3')
+    plt.title(f"Boxplot for {column}")
+
+plt.tight_layout()
+plt.show()
+```
+
+We can see that most of the numerical features show a normal distribution, only for the three plots in the second row, we can see that they are sightly left-skewed.
+
+## Weather: Modelling
+
+### Modeling Summary
+
+Now, before applying only the six classification algorithms, we  create new dataframes where one of them is the dataset with all variables, the other one is the dataset with all variables with a mean zero and standard deviation 1, we apply the SelectKBest algorithm to check which are the ten best features of the 19 that the dataset has after the preprocessing part, and those variables are ***'MaxTemp'***, ***'Rainfall'***, ***'WindGustSpeed'***, ***'WindSpeed3pm'***, ***'Humidity9am'***, ***'Humidity3pm'***, ***'Pressure9am'***, ***'Pressure3pm'***, ***'Temp3pm'***, ***'RainToday'***, and then we will check the performance metrics of the 6 different classification algorithms, and then the last dataset would be the one with 10 best feature selection variables with scaled data, mean of zero and standard deviation of 1.
+
+Now that we move into the modelling part, we first do the splitting of the training and testing sets, with a 0.2 ratio, and the random state is set, since we do not want to have different results each time the code runs, and to be put differently into the project report. ning and is there a chance that there might be an issue of overfitting?
+
+```{python}
+#| label: weather data all results table save it
+#| echo: false
+#| message: true
+#| include: true
+
+results_weather_all = pd.read_csv("photoDF/results_weather_allmodels.csv")
+
+results_weather_all
+```
+
+
+
+After running the six classification machine learning algorithms (on the 24 supposed datasets), we can see that the best performing model when comparing the metrics such as accuracy, precision, recall, f1 score, roc auc score and the computational time is ***Random Forest Classifier with scaled data*** (mean 0, and standard deviation of 1).
+
+- ***Accuracy***:  In this case, it is ***85.84%***, which means that the model correctly predicts whether it will rain or not about 85.84% of the time. In the context of predicting weather conditions, accuracy is crucial as it directly reflects the model's ability to provide reliable forecasts, which is valuable for making informed decisions, planning activities, and managing resources effectively.
+
+- ***Precision***: A precision of ***77.51%*** means that out of all the instances the model predicted as rain, 77.51% of them were actually rain.
+
+- ***Recall***: Also known as sensitivit, and with a score of 51.89% means that the model correctly identifies ***51.89%*** of the actual instances of rain.
+
+- ***F1-score***: In this case, the F1-score is ***62.16%***. A higher F1-score indicates better model performance. An F1-score of ***62.16%*** suggests that the model has achieved a fair balance between precision and recall
+
+- ***ROC AUC Score***: ROC AUC score, in this case, ***73.77%*** indicates a very good discrimination between the positive and negative classes.
+
+- ***Computational Time***: It took approximately ***24.81*** seconds for the model to train and make predictions.
+
+
+```{python}
+#| label: weather data label encoding
+#| echo: false
+#| message: false
+#| include: false
+
+from sklearn.preprocessing import LabelEncoder
+
+categorical_weather = ['Location', 'WindGustDir', 'WindDir9am', 'WindDir3pm', 'RainToday', 'RainTomorrow']
+
+# Initialize LabelEncoder
+label_encoder = LabelEncoder()
+
+# Iterate through each categorical column and encode its values
+for column in categorical_weather:
+    weather[column] = label_encoder.fit_transform(weather[column])
+
+weather
+```
+
+
+
+
+```{python}
+#| label: weather data remove data column
+#| echo: false
+#| message: false
+#| include: false
+
+column_to_remove = ['Date']  
+
+# Remove the specified columns from the DataFrame
+weather.drop(columns=column_to_remove, inplace=True)
+```
+
+
+```{python}
+#| label: weather data splitting
+#| echo: false
+#| message: false
+#| include: false
+
+X = weather.drop(columns = ['RainTomorrow'])
+y = weather['RainTomorrow']
+
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+
+# Initialize the StandardScaler
+scaler = StandardScaler()
+
+# Fit the scaler to the training data
+scaler.fit(X_train)
+
+# Transform the training and testing data separately
+X_train_scaled = scaler.transform(X_train)
+X_test_scaled = scaler.transform(X_test)
+
+# Convert scaled data back to DataFrames
+X_train_scaled_weather = pd.DataFrame(X_train_scaled, columns=X.columns)
+X_test_scaled_weather = pd.DataFrame(X_test_scaled, columns=X.columns)
+```
+
+```{python}
+#| label: weather data selectkbest
+#| echo: false
+#| message: false
+#| include: false
+ 
+from sklearn.feature_selection import SelectKBest
+from sklearn.feature_selection import f_regression
+target_variable = 'RainTomorrow'
+k=10
+X_feature_weather = weather.drop(columns=[target_variable])
+y_feature_weather = weather[target_variable]
+selector = SelectKBest(score_func=f_regression, k=k)
+X_selected = selector.fit_transform(X_feature_weather, y_feature_weather)
+selected_feature_indices = selector.get_support(indices=True)
+selected_feature_names = weather.columns[selected_feature_indices].tolist()
+print("Selected Features using SelectKBest:")
+print(selected_feature_names)
+
+
+X_train_featureselection_weather = X_train.drop(columns = ['Location', 'MinTemp', 'WindGustDir', 'WindDir9am', 'WindDir3pm', 'WindSpeed9am', 'Temp9am'])
+X_test_featureselection_weather = X_test.drop(columns = ['Location', 'MinTemp', 'WindGustDir', 'WindDir9am', 'WindDir3pm', 'WindSpeed9am', 'Temp9am'])
+
+X_train_featureselection_scaled_weather = X_train_scaled_weather.drop(columns = ['Location', 'MinTemp', 'WindGustDir', 'WindDir9am', 'WindDir3pm', 'WindSpeed9am', 'Temp9am'])
+X_test_featureselection_scaled_weather = X_test_scaled_weather.drop(columns = ['Location', 'MinTemp', 'WindGustDir', 'WindDir9am', 'WindDir3pm', 'WindSpeed9am', 'Temp9am'])
+
+```
+
+
+
+
+```{python}
+#| label: weather data random forest all variables
+#| echo: false
+#| message: false
+#| include: false
+#| eval: false 
+
+# Creatin a performance scores dataframe
+results_weather = pd.DataFrame(columns=['Model', 'Accuracy', 'Precision', 'Recall', 'F1-score', 'ROC AUC Score', 'Computational Time'])
+
+start_time = time.time()
+
+model_rf = RandomForestClassifier()
+model_rf.fit(X_train, y_train)
+
+# Make predictions on the test data
+y_pred = model_rf.predict(X_test)
+
+# Calculate performance metrics
+accuracy = accuracy_score(y_test, y_pred)
+precision = precision_score(y_test, y_pred)
+recall = recall_score(y_test, y_pred)
+f1 = f1_score(y_test, y_pred)
+auc = roc_auc_score(y_test, y_pred)
+
+end_time = time.time()
+computational_time = end_time - start_time
+
+# Append the metrics to the DataFrame
+results_weather = results_weather.append({
+    'Model': 'Random Forest Classifier',
+    'Accuracy': accuracy,
+    'Precision': precision,
+    'Recall': recall,
+    'F1-score': f1,
+    'ROC AUC Score': auc,
+    'Computational Time': computational_time
+}, ignore_index=True)
+
+results_weather
+```
+
+
+
+```{python}
+#| label: weather data random forest all variables scaled
+#| echo: false
+#| message: false
+#| include: false
+#| eval: false 
+
+start_time = time.time()
+
+# Fit the model to the training data
+model_rf.fit(X_train_scaled_weather, y_train)
+
+# Make predictions on the test data
+y_pred = model_rf.predict(X_test_scaled_weather)
+
+# Calculate performance metrics
+accuracy = accuracy_score(y_test, y_pred)
+precision = precision_score(y_test, y_pred)
+recall = recall_score(y_test, y_pred)
+f1 = f1_score(y_test, y_pred)
+auc = roc_auc_score(y_test, y_pred)
+
+end_time = time.time()
+computational_time = end_time - start_time
+
+# Append the metrics to the DataFrame
+results_weather = results_weather.append({
+    'Model': 'Random Forest Classifier Scaled',
+    'Accuracy': accuracy,
+    'Precision': precision,
+    'Recall': recall,
+    'F1-score': f1,
+    'ROC AUC Score': auc,
+    'Computational Time': computational_time
+}, ignore_index=True)
+
+results_weather
+```
+
+
+
+```{python}
+#| label: weather data random forest feature selection
+#| echo: false
+#| message: false
+#| include: false
+#| eval: false 
+
+start_time = time.time()
+
+# Fit the model to the training data
+model_rf.fit(X_train_featureselection_weather, y_train)
+
+# Make predictions on the test data
+y_pred = model_rf.predict(X_test_featureselection_weather)
+
+# Calculate performance metrics
+accuracy = accuracy_score(y_test, y_pred)
+precision = precision_score(y_test, y_pred)
+recall = recall_score(y_test, y_pred)
+f1 = f1_score(y_test, y_pred)
+auc = roc_auc_score(y_test, y_pred)
+
+end_time = time.time()
+computational_time = end_time - start_time
+
+# Append the metrics to the DataFrame
+results_weather = results_weather.append({
+    'Model': 'Random Forest Classifier with Feature Selection',
+    'Accuracy': accuracy,
+    'Precision': precision,
+    'Recall': recall,
+    'F1-score': f1,
+    'ROC AUC Score': auc,
+    'Computational Time': computational_time
+}, ignore_index=True)
+
+results_weather
+```
+
+
+
+```{python}
+#| label: weather data random forest feature selection scaled
+#| echo: false
+#| message: false
+#| include: false
+#| eval: false 
+
+start_time = time.time()
+
+# Fit the model to the training data
+model_rf.fit(X_train_featureselection_scaled_weather, y_train)
+
+# Make predictions on the test data
+y_pred = model_rf.predict(X_test_featureselection_scaled_weather)
+
+# Calculate performance metrics
+accuracy = accuracy_score(y_test, y_pred)
+precision = precision_score(y_test, y_pred)
+recall = recall_score(y_test, y_pred)
+f1 = f1_score(y_test, y_pred)
+auc = roc_auc_score(y_test, y_pred)
+
+end_time = time.time()
+computational_time = end_time - start_time
+
+# Append the metrics to the DataFrame
+results_weather = results_weather.append({
+    'Model': 'Random Forest Classifier with Feature Selection Scaled',
+    'Accuracy': accuracy,
+    'Precision': precision,
+    'Recall': recall,
+    'F1-score': f1,
+    'ROC AUC Score': auc,
+    'Computational Time': computational_time
+}, ignore_index=True)
+
+results_weather
+```
+
+```{python}
+#| label: weather data random forest scaled cv
+#| echo: false
+#| message: false
+#| include: false
+#| eval: false 
+
+start_time = time.time()
+
+# Perform cross-validation
+cv_results = cross_validate(model_rf, X_train_scaled_weather, y_train, cv=5, 
+                            scoring=['accuracy', 'precision', 'recall', 'f1', 'roc_auc'])
+
+# Calculate mean scores across folds
+accuracy = cv_results['test_accuracy'].mean()
+precision = cv_results['test_precision'].mean()
+recall = cv_results['test_recall'].mean()
+f1 = cv_results['test_f1'].mean()
+auc = cv_results['test_roc_auc'].mean()
+
+end_time = time.time()
+computational_time = end_time - start_time
+
+# Append the metrics to the DataFrame
+results_weather = results_weather.append({
+    'Model': 'Random Forest Classifier Scaled with Cross Validation',
+    'Accuracy': accuracy,
+    'Precision': precision,
+    'Recall': recall,
+    'F1-score': f1,
+    'ROC AUC Score': auc,
+    'Computational Time': computational_time
+}, ignore_index=True)
+
+results_weather
+
+```
+
+```{python}
+#| label: weather data results table
+#| echo: false
+#| message: true
+#| include: false
+#| eval: false 
+
+results_weather
+```
+
+```{python}
+#| label: weather data results table save it
+#| echo: false
+#| message: true
+#| include: false
+#| eval: false 
+
+# Save the DataFrame to a CSV file
+results_weather.to_csv('photoDF/results_weather_randomforest.csv', index=False)
+```
+
+
+
+### Best Model Performance 
+
+Now we are curious about how Random Forest performs with scaled data, both with and without cross-validation, will perform, will it be consistent, or will there be differences? 
+
+```{python}
+#| label: weather data results table show it
+#| echo: false
+#| message: true
+#| include: true
+
+results_weather_rf = pd.read_csv("photoDF/results_weather_randomforest.csv")
+
+results_weather_rf
+```
+
+Overall, from the table above we can see that both models have similar accuracy and performance in terms of precision, recall, and F1-score, the second model with cross-validation demonstrates superior discrimination between classes, as evidenced by its higher ROC AUC score. However, this improvement comes at the cost of increased computational time.
+
+When the results of a model with and without cross-validation are almost the same, it means the model is consistent and doesn't rely heavily on how the data is split for validation. This suggests the model is stable and can generalize well to new data. 
+
+## Weather: Additional Techniques
+
+### Learning Curve
+
+Now, for the best performace model, we want to see the learning curve of this model.
+
+```{python}
+#| label: weather data learning curve
+#| echo: false
+#| message: false
+#| include: false
+#| eval: false 
+
+## LEARNING CURVE FOR RANDOM FOREST CLASSIFIER
+
+from sklearn.datasets import load_digits
+import matplotlib.pyplot as plt
+import numpy as np
+from sklearn.model_selection import LearningCurveDisplay, ShuffleSplit
+
+fig, ax = plt.subplots(1, 1, figsize=(10, 6), sharey=True)
+
+common_params = {
+    "X": X,
+    "y": y,
+    "train_sizes": np.linspace(0.1, 1.0, 5),
+    "cv": ShuffleSplit(n_splits=50, test_size=0.2),
+    "score_type": "both",
+    "n_jobs": 4,
+    "line_kw": {"marker": "o"},
+    "std_display_style": "fill_between",
+    "score_name": "Accuracy",
+}
+
+estimator = model_rf  # Use only model_rf
+
+LearningCurveDisplay.from_estimator(estimator, **common_params, ax=ax)
+handles, label = ax.get_legend_handles_labels()
+ax.legend(handles[:2], ["Training Score", "Test Score"])
+ax.set_title(f"Learning Curve for {estimator.__class__.__name__}")
+
+# Save the plot as an image file
+plt.savefig('photoDF/learning_curve_rf_weather.png')
+
+# Show the plot
+plt.show()
+
+```
+
+<a id="figure-1"></a>
+
+![Weather Figure 1: Learning curve, through different samples](photoDF/learning_curve_rf_weather.png)
+
+The learning curve plot, as shown in [Weather Figure 1](#figure-1), reveals that the model achieves a perfect score when trained on 10,000 samples, indicating its ability to memorize the training data entirely. However, the most significant improvement in performance for the testing data occurs when using 30,000 samples. Beyond this point, additional samples result in minimal enhancements in performance. So, when the training accuracy remains relatively stable while the testing accuracy improves slightly with an increase in the number of samples, it indicates that the model is learning to generalize better as more data is provided.
+
+
+### Checking for Overfitting 
+
+Now we want to check overfitting with the Random Forest Classifier Scaled Dataset using different settings: max depth ranging from 1 to 20, and the number of estimators set at 50, 100, and 150. By testing various configurations, we aim to understand how the model's performance changes with different complexities. This helps us identify the optimal balance between model complexity and generalization ability.
+
+
+```{python}
+#| label: weather data max depth overfitting50
+#| echo: false
+#| message: true
+#| include: false
+#| eval: false 
+
+X = weather.drop(columns=['RainTomorrow'])
+y = weather['RainTomorrow']
+
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+
+# Initialize the StandardScaler
+scaler = StandardScaler()
+
+# Fit the scaler to the training data
+scaler.fit(X_train)
+
+# Transform the training and testing data separately
+X_train_scaled = scaler.transform(X_train)
+X_test_scaled = scaler.transform(X_test)
+
+# Convert scaled data back to DataFrames
+X_train_scaled_weather = pd.DataFrame(X_train_scaled, columns=X.columns)
+X_test_scaled_weather = pd.DataFrame(X_test_scaled, columns=X.columns)
+
+# Define lists to collect scores
+train_scores, test_scores = [], []
+train_precision, test_precision = [], []
+train_recall, test_recall = [], []
+train_f1, test_f1 = [], []
+train_roc_auc_scores, test_roc_auc_scores = [], [] # Changed variable names
+
+# Define the tree depths to evaluate
+values = [i for i in range(1, 21)]
+
+# Evaluate a random forest for each depth
+for i in values:
+    # Configure the model
+    model = RandomForestClassifier(n_estimators=50, max_depth=i, random_state=42)
+    
+    # Fit model on the training dataset
+    model.fit(X_train_scaled_weather, y_train)
+    
+    # Predictions
+    train_yhat = model.predict(X_train_scaled_weather)
+    test_yhat = model.predict(X_test_scaled_weather)
+    
+    # Accuracy
+    train_acc = accuracy_score(y_train, train_yhat)
+    test_acc = accuracy_score(y_test, test_yhat)
+    
+    # Precision
+    train_prec = precision_score(y_train, train_yhat)
+    test_prec = precision_score(y_test, test_yhat)
+    
+    # Recall
+    train_rec = recall_score(y_train, train_yhat)
+    test_rec = recall_score(y_test, test_yhat)
+    
+    # F1 Score
+    train_f1score = f1_score(y_train, train_yhat)
+    test_f1score = f1_score(y_test, test_yhat)
+    
+    # ROC AUC Score
+    train_roc_auc = roc_auc_score(y_train, train_yhat)
+    test_roc_auc = roc_auc_score(y_test, test_yhat)
+    
+    # Append scores to respective lists
+    train_scores.append(train_acc)
+    test_scores.append(test_acc)
+    train_precision.append(train_prec)
+    test_precision.append(test_prec)
+    train_recall.append(train_rec)
+    test_recall.append(test_rec)
+    train_f1.append(train_f1score)
+    test_f1.append(test_f1score)
+    train_roc_auc_scores.append(train_roc_auc) # Changed variable name
+    test_roc_auc_scores.append(test_roc_auc) # Changed variable name
+
+    # Summarize progress
+    #print('>%d, train_acc: %.3f, test_acc: %.3f, train_prec: %.3f, test_prec: %.3f, train_rec: %.3f, test_rec: %.3f, train_f1: %.3f, test_f1: %.3f, train_roc_auc: %.3f, test_roc_auc: %.3f' % (i, train_acc, test_acc, train_prec, test_prec, train_rec, test_rec, train_f1score, test_f1score, train_roc_auc, test_roc_auc))
+
+# Plot of train and test scores vs tree depth
+plt.figure(figsize=(12, 8))
+
+plt.subplot(2, 3, 1)
+plt.plot(values, train_scores, '-o', label='Train')
+plt.plot(values, test_scores, '-o', label='Test')
+plt.xlabel('Max Depth')
+plt.ylabel('Accuracy')
+plt.title('Random Forest Accuracy')
+plt.legend(loc='lower right')
+plt.grid(True)
+
+plt.subplot(2, 3, 2)
+plt.plot(values, train_precision, '-o', label='Train')
+plt.plot(values, test_precision, '-o', label='Test')
+plt.xlabel('Max Depth')
+plt.ylabel('Precision')
+plt.title('Random Forest Precision')
+plt.legend(loc='lower right')
+plt.grid(True)
+
+plt.subplot(2, 3, 3)
+plt.plot(values, train_recall, '-o', label='Train')
+plt.plot(values, test_recall, '-o', label='Test')
+plt.xlabel('Max Depth')
+plt.ylabel('Recall')
+plt.title('Random Forest Recall')
+plt.legend(loc='lower right')
+plt.grid(True)
+
+plt.subplot(2, 3, 4)
+plt.plot(values, train_f1, '-o', label='Train')
+plt.plot(values, test_f1, '-o', label='Test')
+plt.xlabel('Max Depth')
+plt.ylabel('F1 Score')
+plt.title('Random Forest F1 Score')
+plt.legend(loc='lower right')
+plt.grid(True)
+
+plt.subplot(2, 3, 5)
+plt.plot(values, train_roc_auc_scores, '-o', label='Train')
+plt.plot(values, test_roc_auc_scores, '-o', label='Test')
+plt.xlabel('Max Depth')
+plt.ylabel('ROC AUC Score')
+plt.title('Random Forest ROC AUC Score')
+plt.legend(loc='lower right')
+plt.grid(True)
+
+plt.tight_layout()
+
+
+# Save the plot as an image file
+plt.savefig('photoDF/random_forest_performance.png')
+plt.show()
+
+```
+
+
+```{python}
+#| label: weather data max depth overfitting100
+#| echo: false
+#| message: true
+#| include: false
+#| eval: false 
+
+
+X = weather.drop(columns=['RainTomorrow'])
+y = weather['RainTomorrow']
+
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+
+# Initialize the StandardScaler
+scaler = StandardScaler()
+
+# Fit the scaler to the training data
+scaler.fit(X_train)
+
+# Transform the training and testing data separately
+X_train_scaled = scaler.transform(X_train)
+X_test_scaled = scaler.transform(X_test)
+
+# Convert scaled data back to DataFrames
+X_train_scaled_weather = pd.DataFrame(X_train_scaled, columns=X.columns)
+X_test_scaled_weather = pd.DataFrame(X_test_scaled, columns=X.columns)
+
+# Define lists to collect scores
+train_scores, test_scores = [], []
+train_precision, test_precision = [], []
+train_recall, test_recall = [], []
+train_f1, test_f1 = [], []
+train_roc_auc_scores, test_roc_auc_scores = [], [] # Changed variable names
+
+# Define the tree depths to evaluate
+values = [i for i in range(1, 21)]
+
+# Evaluate a random forest for each depth
+for i in values:
+    # Configure the model
+    model = RandomForestClassifier(n_estimators=100, max_depth=i, random_state=42)
+    
+    # Fit model on the training dataset
+    model.fit(X_train_scaled_weather, y_train)
+    
+    # Predictions
+    train_yhat = model.predict(X_train_scaled_weather)
+    test_yhat = model.predict(X_test_scaled_weather)
+    
+    # Accuracy
+    train_acc = accuracy_score(y_train, train_yhat)
+    test_acc = accuracy_score(y_test, test_yhat)
+    
+    # Precision
+    train_prec = precision_score(y_train, train_yhat)
+    test_prec = precision_score(y_test, test_yhat)
+    
+    # Recall
+    train_rec = recall_score(y_train, train_yhat)
+    test_rec = recall_score(y_test, test_yhat)
+    
+    # F1 Score
+    train_f1score = f1_score(y_train, train_yhat)
+    test_f1score = f1_score(y_test, test_yhat)
+    
+    # ROC AUC Score
+    train_roc_auc = roc_auc_score(y_train, train_yhat)
+    test_roc_auc = roc_auc_score(y_test, test_yhat)
+    
+    # Append scores to respective lists
+    train_scores.append(train_acc)
+    test_scores.append(test_acc)
+    train_precision.append(train_prec)
+    test_precision.append(test_prec)
+    train_recall.append(train_rec)
+    test_recall.append(test_rec)
+    train_f1.append(train_f1score)
+    test_f1.append(test_f1score)
+    train_roc_auc_scores.append(train_roc_auc) # Changed variable name
+    test_roc_auc_scores.append(test_roc_auc) # Changed variable name
+
+    # Summarize progress
+    #print('>%d, train_acc: %.3f, test_acc: %.3f, train_prec: %.3f, test_prec: %.3f, train_rec: %.3f, test_rec: %.3f, train_f1: %.3f, test_f1: %.3f, train_roc_auc: %.3f, test_roc_auc: %.3f' % (i, train_acc, test_acc, train_prec, test_prec, train_rec, test_rec, train_f1score, test_f1score, train_roc_auc, test_roc_auc))
+
+# Plot of train and test scores vs tree depth
+plt.figure(figsize=(12, 8))
+
+plt.subplot(2, 3, 1)
+plt.plot(values, train_scores, '-o', label='Train')
+plt.plot(values, test_scores, '-o', label='Test')
+plt.xlabel('Max Depth')
+plt.ylabel('Accuracy')
+plt.title('Random Forest Accuracy')
+plt.legend(loc='lower right')
+plt.grid(True)
+
+plt.subplot(2, 3, 2)
+plt.plot(values, train_precision, '-o', label='Train')
+plt.plot(values, test_precision, '-o', label='Test')
+plt.xlabel('Max Depth')
+plt.ylabel('Precision')
+plt.title('Random Forest Precision')
+plt.legend(loc='lower right')
+plt.grid(True)
+
+plt.subplot(2, 3, 3)
+plt.plot(values, train_recall, '-o', label='Train')
+plt.plot(values, test_recall, '-o', label='Test')
+plt.xlabel('Max Depth')
+plt.ylabel('Recall')
+plt.title('Random Forest Recall')
+plt.legend(loc='lower right')
+plt.grid(True)
+
+plt.subplot(2, 3, 4)
+plt.plot(values, train_f1, '-o', label='Train')
+plt.plot(values, test_f1, '-o', label='Test')
+plt.xlabel('Max Depth')
+plt.ylabel('F1 Score')
+plt.title('Random Forest F1 Score')
+plt.legend(loc='lower right')
+plt.grid(True)
+
+plt.subplot(2, 3, 5)
+plt.plot(values, train_roc_auc_scores, '-o', label='Train')
+plt.plot(values, test_roc_auc_scores, '-o', label='Test')
+plt.xlabel('Max Depth')
+plt.ylabel('ROC AUC Score')
+plt.title('Random Forest ROC AUC Score')
+plt.legend(loc='lower right')
+plt.grid(True)
+
+plt.tight_layout()
+
+# Save the plot as an image file
+plt.savefig('photoDF/random_forest_performance2.png')
+plt.show()
+
+```
+
+
+```{python}
+#| label: weather data max depth overfitting150
+#| echo: false
+#| message: true
+#| include: false
+#| eval: false 
+
+X = weather.drop(columns=['RainTomorrow'])
+y = weather['RainTomorrow']
+
+X = weather.drop(columns=['RainTomorrow'])
+y = weather['RainTomorrow']
+
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+
+# Initialize the StandardScaler
+scaler = StandardScaler()
+
+# Fit the scaler to the training data
+scaler.fit(X_train)
+
+# Transform the training and testing data separately
+X_train_scaled = scaler.transform(X_train)
+X_test_scaled = scaler.transform(X_test)
+
+# Convert scaled data back to DataFrames
+X_train_scaled_weather = pd.DataFrame(X_train_scaled, columns=X.columns)
+X_test_scaled_weather = pd.DataFrame(X_test_scaled, columns=X.columns)
+
+# Define lists to collect scores
+train_scores, test_scores = [], []
+train_precision, test_precision = [], []
+train_recall, test_recall = [], []
+train_f1, test_f1 = [], []
+train_roc_auc_scores, test_roc_auc_scores = [], [] # Changed variable names
+
+# Define the tree depths to evaluate
+values = [i for i in range(1, 21)]
+
+# Evaluate a random forest for each depth
+for i in values:
+    # Configure the model
+    model = RandomForestClassifier(n_estimators=150, max_depth=i, random_state=42)
+    
+    # Fit model on the training dataset
+    model.fit(X_train_scaled_weather, y_train)
+    
+    # Predictions
+    train_yhat = model.predict(X_train_scaled_weather)
+    test_yhat = model.predict(X_test_scaled_weather)
+    
+    # Accuracy
+    train_acc = accuracy_score(y_train, train_yhat)
+    test_acc = accuracy_score(y_test, test_yhat)
+    
+    # Precision
+    train_prec = precision_score(y_train, train_yhat)
+    test_prec = precision_score(y_test, test_yhat)
+    
+    # Recall
+    train_rec = recall_score(y_train, train_yhat)
+    test_rec = recall_score(y_test, test_yhat)
+    
+    # F1 Score
+    train_f1score = f1_score(y_train, train_yhat)
+    test_f1score = f1_score(y_test, test_yhat)
+    
+    # ROC AUC Score
+    train_roc_auc = roc_auc_score(y_train, train_yhat)
+    test_roc_auc = roc_auc_score(y_test, test_yhat)
+    
+    # Append scores to respective lists
+    train_scores.append(train_acc)
+    test_scores.append(test_acc)
+    train_precision.append(train_prec)
+    test_precision.append(test_prec)
+    train_recall.append(train_rec)
+    test_recall.append(test_rec)
+    train_f1.append(train_f1score)
+    test_f1.append(test_f1score)
+    train_roc_auc_scores.append(train_roc_auc) # Changed variable name
+    test_roc_auc_scores.append(test_roc_auc) # Changed variable name
+
+    # Summarize progress
+    print('>%d, train_acc: %.3f, test_acc: %.3f, train_prec: %.3f, test_prec: %.3f, train_rec: %.3f, test_rec: %.3f, train_f1: %.3f, test_f1: %.3f, train_roc_auc: %.3f, test_roc_auc: %.3f' % (i, train_acc, test_acc, train_prec, test_prec, train_rec, test_rec, train_f1score, test_f1score, train_roc_auc, test_roc_auc))
+
+# Plot of train and test scores vs tree depth
+plt.figure(figsize=(12, 8))
+
+plt.subplot(2, 3, 1)
+plt.plot(values, train_scores, '-o', label='Train')
+plt.plot(values, test_scores, '-o', label='Test')
+plt.xlabel('Max Depth')
+plt.ylabel('Accuracy')
+plt.title('Random Forest Accuracy')
+plt.legend(loc='lower right')
+plt.grid(True)
+
+plt.subplot(2, 3, 2)
+plt.plot(values, train_precision, '-o', label='Train')
+plt.plot(values, test_precision, '-o', label='Test')
+plt.xlabel('Max Depth')
+plt.ylabel('Precision')
+plt.title('Random Forest Precision')
+plt.legend(loc='lower right')
+plt.grid(True)
+
+plt.subplot(2, 3, 3)
+plt.plot(values, train_recall, '-o', label='Train')
+plt.plot(values, test_recall, '-o', label='Test')
+plt.xlabel('Max Depth')
+plt.ylabel('Recall')
+plt.title('Random Forest Recall')
+plt.legend(loc='lower right')
+plt.grid(True)
+
+plt.subplot(2, 3, 4)
+plt.plot(values, train_f1, '-o', label='Train')
+plt.plot(values, test_f1, '-o', label='Test')
+plt.xlabel('Max Depth')
+plt.ylabel('F1 Score')
+plt.title('Random Forest F1 Score')
+plt.legend(loc='lower right')
+plt.grid(True)
+
+plt.subplot(2, 3, 5)
+plt.plot(values, train_roc_auc_scores, '-o', label='Train')
+plt.plot(values, test_roc_auc_scores, '-o', label='Test')
+plt.xlabel('Max Depth')
+plt.ylabel('ROC AUC Score')
+plt.title('Random Forest ROC AUC Score')
+plt.legend(loc='lower right')
+plt.grid(True)
+
+plt.tight_layout()
+
+# Save the plot as an image file
+plt.savefig('photoDF/random_forest_performance3.png')
+plt.show()
+
+```
+
+#### Random Forest Classifier with 50 estimators
+
+<a id="figure-2"></a>
+
+![Weather Figure 2a: Random Forest Performance with 50 estimators and max depth from 1-20](photoDF/random_forest_performance.png)
+
+#### Random Forest Classifier with 100 estimators
+
+![Weather Figure 2b: Random Forest Performance with 100 estimators and max depth from 1-20](photoDF/random_forest_performance2.png)
+
+#### Random Forest Classifier with 150 estimators
+
+![WeatherFigure 2c: Random Forest Performance with 150 estimators and max depth from 1-20](photoDF/random_forest_performance3.png)
+
+
+When exploring different combinations of max depth and number of estimators for the Random Forest Classifier, we observed from [Weather Figure 2a), 2b), and 2c)](#figure-2), that increasing the max depth generally led to improved performance metrics on the training set, including accuracy, precision, recall, F1-score, and ROC AUC score. However, the performance on the testing dataset showed fluctuations, with some max depths performing better than others. From the plots, it's evident that the training scores consistently improve with increasing max depth, but the testing scores fluctuate, indicating potential overfitting.
+
+The optimal max depth appears to be in the range of 6 to 8, where the differences in performance metrics between different depths are minimal, suggesting a balance between model complexity and generalization. This range offers good performance on both the training and testing datasets while reducing the risk of overfitting.
+
+Interestingly, varying the number of estimators 50, 100, and 150 in the Random Forest did not significantly impact the shape or trend of the learning curves. Despite differences in the number of trees in the forest, the overall behavior of the model, as reflected in the learning curves, remained consistent. This suggests that increasing the number of estimators beyond a certain point may not lead to substantial improvements in model performance. Therefore, it is very important to consider the trade-off between computational complexity and performance when selecting the number of estimators.
+
+## Weather: Key Findings
+
+The Random Forest Classifier with 100 estimators and a maximum depth of 6 exhibits optimal performance for this dataset.
+Increasing the number of estimators beyond 100 does not significantly enhance model performance, suggesting diminishing returns.
+Effective preprocessing steps, including missing value handling and feature selection, contribute to improved model interpretability and performance. Additionally, the dataset's balanced class distribution ensures robust model training and evaluation.
+
+
+
+
+
+
+
+# Health Sector: Cardiovascular Dataset
+
+## Cardiovascular: Data Overview
+
+The Cardiovascular Dataset was taken from Kaggle (available from this link: *https://www.kaggle.com/datasets/alphiree/cardiovascular-diseases-risk-prediction-dataset*). This involves examining a healthcare dataset with the goal of predicting the reasons behind various diseases, particularly heart disease. This dataset has 308,854 observations and 19 features, including lifestyle factors, personal details, habits, and the presence of different diseases. 
+
+In this dataset, there are 12 categorical variables and 7 numerical variables. Below you can see the feature names along with their descriptions below. 
+
+| Column Name | Description
+|---|---|
+| **General_Health** | Indicates the general health status of the individual, categorized as 'Poor', 'Very Good', 'Good', 'Fair', or 'Excellent'.  |
+| **Checkup** | Indicates the frequency of medical checkups, with options such as 'Within the past 2 years', 'Within the past year', '5 or more years ago', 'Within the past 5 years', or 'Never'.   |
+| **Exercise** | Indicates whether the individual engages in regular exercise, with options 'Yes' or 'No'.   | 
+| **Heart_Disease** | Indicates the presence or absence of heart disease, with options 'Yes' or 'No'.    | 
+| **Skin_Cancer** | Indicates the presence or absence of skin cancer, with options 'Yes' or 'No'.    | 
+| **Other_Cancer** | Indicates the presence or absence of other types of cancer, with options 'Yes' or 'No'.     | 
+| **Depression**| Indicates whether the individual suffers from depression, with options 'Yes' or 'No'.      | 
+| **Diabetes** | Indicates the presence or absence of diabetes, with options including 'Yes' or 'No'.     | 
+| **Arthritis** | Indicates the presence or absence of arthritis, with options 'Yes' or 'No'.    |
+| **Sex** | Indicates the gender of the individual, with options 'Female' or 'Male'.    |
+| **Age_Category** | Indicates the age category of the individual, such as '70-74', '60-64', '75-79', '80+', etc.   | 
+| **Height_(cm)** | Indicates the height of the individual in centimeters.    | 
+| **Weight_(kg)** | Indicates the weight of the individual in kilograms.  | 
+| **BMI** | Indicates the Body Mass Index (BMI) of the individual.   | 
+| **Smoking_History**| Indicates the smoking history of the individual, with options 'Yes' or 'No'.   | 
+| **Alcohol_Consumption** | Indicates the frequency of alcohol consumption, measured in units.    | 
+| **Fruit_Consumption** | Indicates the frequency of fruit consumption per week, measured in servings.    |
+| **Green_Vegetables_Consumption** | Indicates the frequency of green vegetables consumption per week, measured in servings.     |
+| **FriedPotato_Consumption** | Indicates the frequency of fried potato consumption per week, measured in servings.    | 
+
+## Cardiovascular: Exploratory Data Analysis 
+
+### A Series of Boxplots
+
+For the exploratory data analysis, we start generating a series of boxplots for numerical columns in the "cardio" dataset, representing the distribution of various health and lifestyle variables. These visualizations are helpful for understanding the spread and central tendencies of the data.
+
+```{python}
+#| label: cardio boxplot
+#| echo: false
+
+# Select only numerical columns
+numeric_columns = cardio.select_dtypes(include=[np.number]).columns[~cardio.select_dtypes(include=[np.number]).columns.str.contains('Unnamed')]
+
+# Calculate the number of rows and columns for subplots
+num_columns = len(numeric_columns)
+num_rows = (num_columns + 2) // 1 # Ensure at least 3 plots per row
+num_cols = min(num_columns, 1)
+
+# Set up the matplotlib figure and axes
+fig, axs = plt.subplots(nrows=num_rows, ncols=num_cols, figsize=(15 * num_cols, 5 * num_rows))
+
+# Flatten the axes array for easy iteration
+axs = axs.flatten()
+
+# Loop through each numerical column and plot a boxplot
+for i, column in enumerate(numeric_columns):
+    sns.boxplot(x=cardio[column], ax=axs[i], width=0.3)
+    axs[i].set_title(f'Boxplot of {column}')
+    axs[i].set_xlabel('')
+
+# Remove empty subplots
+for i in range(num_columns, num_rows * num_cols):
+    fig.delaxes(axs[i])
+
+# Adjust layout
+plt.tight_layout()
+plt.show()
+```
+
+The provided data exhibits unusual extremes for height, weight, and BMI, with maximum values of 241 cm, 293 kg, and 99.33 respectively, as well as minimum values of 91 cm and 24 kg. Given that this data was collected from adults, such extremes are uncommon and likely represent outliers. These outliers should be removed during the data cleaning process to ensure the dataset's integrity for analysis.
+
+### A Collection of Histograms
+
+This visualization shows a collection of histograms, each representing the distribution of each numerical variable. 
+
+```{python}
+#| label: cardio histogram only numerical
+#| echo: false
+
+numeric_columns = cardio.select_dtypes(include=['int64', 'float64']).columns
+
+# Calculate the number of rows and columns for subplots
+num_columns = len(numeric_columns)
+num_rows = math.ceil(num_columns / 2)  # Use ceil to round up and ensure enough rows
+
+# Set up the matplotlib figure and axes
+fig, axs = plt.subplots(nrows=num_rows, ncols=2, figsize=(30, 6 * num_rows))
+
+# Flatten the axes array for easy iteration
+axs = axs.flatten()
+
+# Loop through each numerical column and plot a histogram
+for i, column in enumerate(numeric_columns):
+    if i < len(axs):  # Ensure we don't go out of bounds
+        sns.histplot(cardio[column], ax=axs[i], bins=50, kde=True, color='skyblue', edgecolor='black')
+        axs[i].set_title(f'Histogram of {column}')
+        axs[i].set_xlabel('Value')
+        axs[i].set_ylabel('Frequency')
+    else:  # If there are more columns than subplots, break the loop
+        break
+
+# Hide any unused axes if the number of columns is odd
+if num_columns % 2 != 0:
+    axs[-1].set_visible(False)  # Hide the last subplot if unused
+
+# Adjust layout to prevent overlapping
+plt.tight_layout()
+plt.show()
+```
+
+- **Height (cm):** The data appears to be normally distributed, centered around a mean value which looks to be approximately 170 cm.
+
+- **Weight (kg):** Similar to the height distribution, it seems normally distributed, with a mean value somewhere around 60-100 kg.
+
+- **BMI:** Most of the people in this dataset have BMI value between 25 and 30 which is categorized as Overweight. However there are significant number of people who fall under Normal (18 - 25) and Obese (30 - 35) category.
+
+- **Alcohol Consumption:** Most of the people in this dataset consume very low or approximetely 0% of alcohol. This Alcohol consumption graph is heavily right skewed.
+
+- **Fruit Consumption:** This fruit consumption graph shows irregular patterns with multiple peaks, indicating variability in people's diets. 
+
+- **Green Vegetables Consumption:** Similar to fruit consumption, this variable also appears to be multimodal. There are peaks at the lower end of the scale, indicating that a portion of the population consumes green vegetables infrequently.
+
+- **Fried Potato Consumption:** Similar to fruit and green vegetables consumption, this histogram is not normal and is skewed to the right, with a large number of individuals consuming fried potatoes infrequently, and a few consuming them very frequently.
+
+### Target Variable: Heart_Disease
+
+Next, we generated a histogram to show a comparison of individuals with and without heart disease. 
+
+```{python}
+#| label: cardio histogram - target variable
+#| echo: false
+
+sns.histplot(cardio['Heart_Disease'], bins = 50, kde=False, color='skyblue', edgecolor='black', linewidth=1.2, alpha=0.7)
+plt.title('Histogram of Heart Disease')
+plt.ylabel('Count')
+plt.xlabel('Heart Disease')
+
+# Annotate each bar with its count
+for rect in plt.gca().patches:
+    x = rect.get_x() + rect.get_width() / 2
+    y = rect.get_height()
+    plt.gca().annotate(f'{int(y)}', (x, y), xytext=(0, 5), textcoords='offset points', ha='center', color='black')
+
+plt.tight_layout()  # Adjust layout to prevent overlapping
+plt.show()
+```
+
+As the result shown, the "No" bar is significantly higher than the "Yes" bar with 283,883 and 24,971, respectively, indicating a much larger number of individuals in the sample do not have heart disease.
+
+### Correlation Matrix
+
+After that, we copied an original data and create a new dataframe and then converted categorical columns into numerical variables to perform a correlation matrix.
+
+```{python}
+#| label: cardio label encoding
+#| echo: false
+
+# Create a copy of the DataFrame to avoid modifying the original
+cardio_encoded = cardio.copy()
+
+# Create a label encoder object
+label_encoder = LabelEncoder()
+
+# Iterate through each object column and encode its values
+for column in cardio_encoded.select_dtypes(include='object'):
+    cardio_encoded[column] = label_encoder.fit_transform(cardio_encoded[column])
+
+# Now, df_encoded contains the label-encoded categorical columns
+cardio_encoded.head()
+```
+
+```{python}
+#| label: cardio visualization - correlation matrix 1
+#| echo: false
+
+# Calculate the correlation matrix for Data
+correlation_matrix = cardio_encoded.corr()
+
+# Create a heatmap
+plt.figure(figsize=(12, 10))
+heatmap = sns.heatmap(correlation_matrix, annot=False, cmap='viridis')  # Turn off automatic annotations
+plt.title("Correlation Heatmap")
+
+# Annotate each cell with the numeric value using matplotlib's `text` function
+for i in range(correlation_matrix.shape[0]):
+    for j in range(correlation_matrix.shape[1]):
+        plt.text(j + 0.5, i + 0.5, f"{correlation_matrix.iloc[i, j]:.2f}",
+                 ha='center', va='center', color='white')
+
+plt.show()
+```
+
+This heatmap is useful for quickly identifying potential relationships between health-related factors.
+
+As our target variable is the presence of heart disease (Heart_Disease), we plot the bar chart to show the correlation coefficients of various factors with heart disease. 
+
+```{python}
+#| label: cardio visualization - correlation with target variable 
+#| echo: false
+
+# Compute the correlation with 'Heart_Disease' for each numerical column
+correlation_HD = cardio_encoded.corr()['Heart_Disease'].sort_values(ascending=False)
+correlation_HD
+
+# Plot the correlations
+plt.figure(figsize=(14, 7))
+correlation_HD.plot(kind='bar', color='skyblue')
+plt.xlabel('Variables')
+plt.ylabel('Correlation with Heart Disease')
+plt.title('Correlation of Variables with Heart Disease')
+plt.show()
+```
+
+As shown, the factor most strongly correlated with heart disease is "Age_Category (0.23)", followed by "Diabetes (0.17)", "Arthritis (0.15)", and "Smoking_History (0.11)". Other factors like "Sex (0.07)", "BMI (0.04)", "Depression (0.03)", and dietary habits have lower correlations. "Exercise (-0.10)" and "Alcohol Consumption (-0.04)" have the least correlation. Essentially, the chart identifies age, diabetes, arthritis, and smoking as having stronger associations with heart disease in the studied population.
+
+## Cardiovascular: Preprocessing Steps
+
+### Identifying and Handling Outliers
+
+Before identifying and handling outliers, we started ***checking for missing data, including identifying and removing duplicate values.*** It showed that there are **no missing values** in each column of the dataset. However, we found **80 duplicated rows** in this dataset, which were subsequently removed. Duplicate values or entries might occur if a person enters repeated values expectedly or unexpectedly. After this, we checked for ***the number of unique values*** in each column.
+
+```{python}
+#| label: cardio checking for missing values
+#| echo: false
+#| include: false
+
+cardio.isnull().sum()
+```
+
+```{python}
+#| label: cardio data duplicate
+#| echo: false
+#| include: false
+
+cardio.duplicated().sum()
+```
+
+```{python}
+#| label: cardio data remove duplicate
+#| echo: false
+#| include: false
+
+cardio.drop_duplicates()
+```
+
+```{python}
+#| label: cardio data unique
+#| echo: false
+#| include: false
+
+cardio.nunique()
+```
+
+As some unusual extremes shown in the series of boxplot before, we will remove outliers from the Height, Weight, and BMI attributes in this step. However, we will retain outliers in the Alcohol, Fruit, Green Vegetables, and Fried Potato consumption attributes since their accuracy is uncertain.
+
+```{python}
+#| label: cardio - handle outliers
+#| echo: false
+#| include: false
+
+cardio = cardio.drop(cardio[(cardio['Height_(cm)'] < 140) | (cardio['Height_(cm)'] > 205)].index)
+cardio = cardio.drop(cardio[(cardio['Weight_(kg)'] > 225)].index)
+cardio = cardio.drop(cardio[(cardio['BMI'] < 13.4) | (cardio['BMI'] > 53.4)].index)
+```
+
+```{python}
+#| label: cardio - data describe
+#| echo: false
+#| include: false
+
+cardio.describe()
+```
+
+```{python}
+#| label: cardio - data shape
+#| echo: false
+#| include: false
+
+cardio.shape
+```
+
+To mitigate the influence of extreme cases on the results, **outliers were excluded for 1,955 rows**, aiming to prevent potential inaccuracies. As a result, our datasets still contain **306,899 observations.**
+
+### Training and Testing Split
+
+Before training and testing split, we performed label encoding on a copy of the original dataframe named "cardio_encoded". After label encoding process, we checked the data types of variables in the "cardio_encoded" DataFrame to ensure that there are no string-format variables.
+
+Then, we splited the dataset into training and testing sets and standardized the feature variables, preparing it for machine learning modeling. Finally, the scaled data is converted back into DataFrame format for further analysis.
+
+```{python}
+#| label: cardio - spliting the data
+#| echo: false
+#| include: false
+#| eval: false
+
+# Load data
+X = cardio_encoded.drop(columns=['Heart_Disease'])
+y = cardio_encoded['Heart_Disease']
+
+# Train-test split
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+
+# Initialize the StandardScaler
+scaler = StandardScaler()
+
+# Fit the scaler to the training data
+scaler.fit(X_train)
+
+# Transform the training and testing data separately
+X_train_scaled = scaler.transform(X_train)
+X_test_scaled = scaler.transform(X_test)
+
+# Convert scaled data back to DataFrames
+X_train_scaled_cardio = pd.DataFrame(X_train_scaled, columns=X.columns)
+X_test_scaled_cardio = pd.DataFrame(X_test_scaled, columns=X.columns)
+```
+
+### Feature Selection: KBest
+
+This step involves feature selection using the SelectKBest method with a k value of 10. The target variable is set to 'Heart_Disease'. The best selected features include **'Checkup', 'Exercise', 'Heart_Disease', 'Skin_Cancer', 'Depression', 'Diabetes', 'Arthritis', 'Sex', 'Height_(cm)', and 'BMI'.** Finally, the selected features are applied to both the training and testing sets, as well as their scaled versions, by dropping the non-selected features from the datasets.
+
+```{python}
+#| label: cardio - feature selection
+#| echo: false
+#| include: false
+#| eval: false
+
+target_variable = 'Heart_Disease'
+k=10
+X = cardio_encoded.drop(columns=[target_variable])
+y = cardio_encoded[target_variable]
+selector = SelectKBest(score_func=f_classif, k=k)
+X_selected = selector.fit_transform(X, y)
+selected_feature_indices = selector.get_support(indices=True)
+selected_feature = cardio_encoded.columns[selected_feature_indices].tolist()
+print("Selected Features using SelectKBest:")
+print(selected_feature)
+
+X_train_fs_cardio = X_train.drop(columns = ['General_Health', 'Other_Cancer', 'Age_Category', 'Weight_(kg)', 'Smoking_History', 'Alcohol_Consumption', 'Fruit_Consumption', 'Green_Vegetables_Consumption', 'FriedPotato_Consumption'])
+
+X_test_fs_cardio = X_test.drop(columns = ['General_Health', 'Other_Cancer', 'Age_Category', 'Weight_(kg)', 'Smoking_History', 'Alcohol_Consumption', 'Fruit_Consumption', 'Green_Vegetables_Consumption', 'FriedPotato_Consumption'])
+
+X_train_fs_scaled_cardio = X_train_scaled_cardio.drop(columns = ['General_Health', 'Other_Cancer', 'Age_Category', 'Weight_(kg)', 'Smoking_History', 'Alcohol_Consumption', 'Fruit_Consumption', 'Green_Vegetables_Consumption', 'FriedPotato_Consumption'])
+
+X_test_fs_scaled_cardio = X_test_scaled_cardio.drop(columns = ['General_Health', 'Other_Cancer', 'Age_Category', 'Weight_(kg)', 'Smoking_History', 'Alcohol_Consumption', 'Fruit_Consumption', 'Green_Vegetables_Consumption', 'FriedPotato_Consumption'])
+```
+
+### Improving Class Imbalance by Resampling (Undersampling) 
+
+In this step, we calculated the imbalance ratio of the target variable "Heart_Disease" in the dataset. 
+
+```{python}
+#| label: calculate the imbalance ratio 
+#| echo: false
+#| include: false
+#| eval: false
+
+class_distribution1 = cardio['Heart_Disease'].value_counts()
+
+class_proportions1 = cardio['Heart_Disease'].value_counts(normalize=True)
+
+imbalance_ratio1 = class_distribution1[1] / class_distribution1[0]
+
+# Print imbalance ratio
+#imbalance_ratio1
+
+# Plotting the bar chart
+plt.figure(figsize=(8, 6))
+bars = class_distribution1.plot(kind='bar', color=['blue', 'orange'])
+plt.title('Class Distribution')
+plt.xlabel('Heart Disease')
+plt.ylabel('Number of Samples')
+plt.xticks(rotation=0)
+
+# Adding numbers above the bars
+for bar in bars.patches:
+    plt.text(bar.get_x() + bar.get_width() / 2, bar.get_height() + 20, str(int(bar.get_height())), ha='center', va='bottom')
+
+plt.show()
+```
+
+<a id="C-figure-1"></a>
+
+![Cardio Figure 1: Imbalanced Class of Heart Disease](photoDF/imbalanced.png)
+
+As the result shown in the [Cardio Figure 1](#C-figure-1), this ratio highlights a potential class imbalance, indicating that one class (individuals with heart disease) may be underrepresented compared to the other class.
+
+Then, we addressed the class imbalance issue through undersampling of the majority class. Initially, the dataset is divided into majority (no heart disease) and minority (heart disease present) classes. Then, a portion of the majority class is randomly downsampled to achieve a balanced class distribution with **an 80:20 ratio between the majority and minority classes.**
+
+```{python}
+#| label: improve imbalance - resampling (undersampling)
+#| echo: false
+#| include: false
+#| eval: false
+
+majority = cardio_encoded[cardio_encoded['Heart_Disease'] == 0]
+minority = cardio_encoded[cardio_encoded['Heart_Disease'] == 1]
+
+# Undersample majority class with 80:20 ratio
+majority_undersampled = resample(majority,
+                                replace=False,                # Sample without replacement
+                                n_samples=int(len(minority)*4),
+                                # Match 80% of minority class
+                                random_state=42)
+
+# Combine minority class with undersampled majority class
+undersampled = pd.concat([majority_undersampled, minority])
+
+# Display new class counts
+undersampled['Heart_Disease'].value_counts()
+
+# Calculate class distribution after undersampling
+undersampled = undersampled['Heart_Disease'].value_counts()
+
+# Plotting the bar chart
+plt.figure(figsize=(8, 6))
+bars = undersampled.plot(kind='bar', color=['blue', 'orange'])
+plt.title('Class Distribution after Undersampling')
+plt.xlabel('Heart Disease')
+plt.ylabel('Number of Samples')
+plt.xticks(rotation=0)
+
+# Adding numbers above the bars
+for bar in bars.patches:
+    plt.text(bar.get_x() + bar.get_width() / 2, bar.get_height() + 20, str(int(bar.get_height())), ha='center', va='bottom')
+
+plt.show()
+```
+
+Now, the majority class 0 (not having heart disease) and the minority class 1 (having heart disease) have **99,204 and 24,801 observations,** respectively, as you can see in the [Cardio Figure 2](#C-figure-2).
+
+<a id="C-figure-2"></a>
+
+![Cardio Figure 2: Undersampling](photoDF/undersampling.png)
+
+After undersampling, the dataset is split into training and testing sets, followed by standardization of the features. Finally, the scaled data is converted back to DataFrames for further analysis.
+
+```{python}
+#| label: spliting for resampling data
+#| echo: false
+#| include: false
+#| eval: false
+
+X_undersampled = undersampled.drop('Heart_Disease', axis=1)
+y_undersampled = undersampled['Heart_Disease']
+
+X_train_us, X_test_us, y_train_us, y_test_us = train_test_split(
+    X_undersampled, y_undersampled, test_size=0.2, stratify=y_undersampled, random_state=42)
+
+# Initialize the StandardScaler
+scaler = StandardScaler()
+
+# Fit the scaler to the training data
+scaler.fit(X_train_us)
+
+# Transform the training and testing data separately
+X_train_us_scaled = scaler.transform(X_train_us)
+X_test_us_scaled = scaler.transform(X_test_us)
+
+# Convert scaled data back to DataFrames
+X_train_us_scaled_cardio = pd.DataFrame(X_train_us_scaled, columns=X.columns)
+X_test_us_scaled_cardio = pd.DataFrame(X_test_scaled, columns=X.columns)
+```
+
+## Cardiovascular: Modeling
+
+### Modeling Summary
+
+```{python}
+#| label: model performance summary
+#| echo: false
+
+results_cardio_all = pd.read_csv('photoDF/results_cardio.csv', sep=",", header=0, index_col=False)
+results_cardio_all
+```
+
+Based on the results of the model performance, we can conclude the best model performance summary based on each matrix as follows: 
+
+- *Best Accuracy:* The highest accuracy is achieved by **both Gradient Boosting models with all variables and scaled data.** This means the models are correct in their predictions about 91.94% of the time.
+
+- *Best Precision:* The models with the highest precision are **Gradient Boosting with Resampling and Gradient Boosting with Scaled Resampling.** This indicates that when these models predict heart disease, it is correct 60.71% of the time.
+
+- *Best Recall:* The model with the highest recall is **Decision Tree with Resampling, meaning this model correctly identifies about 41.29% of all true cases of heart disease.
+
+- *Best F1-score:* **Gradient Boosting with Resampling and Gradient Boosting with Scaled Resampling** have the highest F1-scores (43.30%), suggesting they have the best balance between precision and recall which means neither missing too many real cases (high recall) nor making too many false positive (high precision).
+
+- *Best ROC AUC Score:* **Gradient Boosting with Resampling and Gradient Boosting with Scaled Resampling** achieve the highest ROC AUC scores (64.10%), indicating their strong ability to distinguish between patients with and without heart disease.
+
+- *Best Computational Time:* **The Logistic Regression with Scaled Resampling** is the fastest to make its predictions, making it the best choice if you need quick prediction
+
+For heart disease prediction, it is essential to select a model that not only has high accuracy but also a strong ability to correctly identify as many actual cases as possible (high recall) and correctly predict heart disease when it is truly present (high precision). Additionally, the ability to distinguish between the classes (high ROC AUC) and a good balance between precision and recall (high F1-score) are particularly important.
+
+Considering the criticality of all these metrics in a healthcare context, ***the Gradient Boosting with Resampling*** and ***Gradient Boosting with Scaled Resampling models*** are the best choices. They not only provide the highest precision and F1-scores, indicating a robust balance between precision and recall, but also the highest ROC AUC scores, demonstrating excellent discriminative ability. However, we will select only ***the Gradient Boosting with Resampling*** for further analysis since scaling resampling did not significantly impact the model's effectiveness compared to using original resampling techniques. 
+
+### Best Model Performance 
+
+Now, we want to see how Gradient Boosting models with all variables and resmapling data perform with and without cross-validation. Are the results consistent, or do they vary?
+
+```{python}
+#| label: Model Evaluation and Comparison with Cross-Validation
+#| echo: false
+
+results_cardio_gb = pd.read_csv('photoDF/gb_cardio.csv', sep=",", header=0, index_col=False)
+results_cardio_gb
+```
+
+Overall, both Gradient Boosting models demonstrate consistent performance between the original and cross-validated versions. However, the cross-validated models generally exhibit higher precision, recall, and F1-score, indicating better generalization and robustness. Nevertheless, this improvement in performance comes with the trade-off of increased computational time.
+
+When a model produces similar results with and without cross-validation, it indicates that the model's performance is consistent and not heavily influenced by how the data is split for validation. This suggests that the model is robust and capable of generalizing effectively to unseen data.
+
+## Cardiovascular: Additional Techiniques
+
+### Learning Curve 
+
+After evaluating the performance of various models for heart disease prediction, it is clear that Gradient Boosting models, especially those with resampling techniques, outperform others. Now, for the best model performance, we want to see the learning curve of this model.
+
+```{python}
+#| label: best model performance summary
+#| echo: false
+#| eval: false
+
+# Create an instance of GradientBoostingClassifier
+gb_classifier = GradientBoostingClassifier()
+
+# Now you can use gb_classifier in your code
+
+
+from sklearn.model_selection import LearningCurveDisplay, ShuffleSplit
+
+# Define common parameters for learning curves
+common_params = {
+    "train_sizes": np.linspace(0.1, 1.0, 5),
+    "cv": ShuffleSplit(n_splits=50, test_size=0.2),
+    "scoring": "accuracy",
+    "n_jobs": 4,
+    "line_kw": {"marker": "o"},
+    "std_display_style": "fill_between",
+}
+
+# Plot learning curve for Gradient Boosting with all variables
+fig, ax = plt.subplots(1, 1, figsize=(10, 6), sharey=True)
+LearningCurveDisplay.from_estimator(gb_classifier, X=X_train, y=y_train, ax=ax, **common_params)
+handles, labels = ax.get_legend_handles_labels()
+ax.legend(handles[:2], ["Training Score", "Test"])
+ax.set_title("Learning Curve for Gradient Boosting with All Variables")
+plt.savefig('learning_curve_all_variables.png')  # Save the visualization as an image
+
+# Plot learning curve for Gradient Boosting with resampling
+fig, ax = plt.subplots(1, 1, figsize=(10, 6), sharey=True)
+LearningCurveDisplay.from_estimator(gb_classifier, X=X_train_us, y=y_train_us, ax=ax, **common_params)
+handles, labels = ax.get_legend_handles_labels()
+ax.legend(handles[:2], ["Training Score", "Cross Validation Score"])
+ax.set_title("Learning Curve for Gradient Boosting with Resampling")
+plt.savefig('learning_curve_resampling.png')  # Save the visualization as an image
+```
+
+<a id="C-figure-3"></a>
+
+![Cardio Figure 3: Learning Curve for Gradient Boosting with All Variables](photoDF/learningcurve_gboriginal.png)
+
+The learning curve plot, as shown in [Cardio Figure 3](#C-figure-3), reveals that test score plateaus around the 100,000 to 125,000 samples mark. Therefore, using a training set size within this range would be appropriate and efficient for training this particular Gradient Boosting model, as it achieves a balance between model performance and computational efficiency. Beyond this range, the benefit of additional samples diminishes.
+
+<a id="C-figure-4"></a>
+
+![Cardio Figure 4: Learning Curve for Gradient Boosting with Resampling](photoDF/learningcurve_gbresampling.png)
+
+The learning curve plot, as shown in [Cardio Figure 4](#C-figure-4), reveals that the proper number of samples would be 40,000 samples, as beyond this point, the test score improvement is marginal, indicating that adding more samples may not significantly improve the model's performance on unseen data. Therefore, a training set size slightly less than 40,000 samples might be optimal for this Gradient Boosting model with resampling.
+
+### Checking for Overfitting
+
+We aim to assess overfitting in Gradient Boosting models trained on all variables and resampled data by experimenting with different hyperparameter settings. Specifically, we will vary the maximum depth from 1 to 20 and fix the number of estimators at 50, 100, and 150. By exploring these configurations, we seek to analyze how the model's performance evolves with varying complexities. This investigation will allow us to determine the optimal trade-off between model complexity and generalization capacity.
+
+#### Checking for Overfitting: Gradient Boosting with All Variable
+
+```{python}
+#| label: find the best max depth for GB (all variable) with n_estimators 50 
+#| echo: false
+#| message: true
+#| include: false
+#| eval: false 
+
+# Define the range of values for max_depth
+maxdepth_values = [i for i in range(1, 21)]
+
+# Define lists to collect scores
+train_scores, test_scores = [], []
+train_precision, test_precision = [], []
+train_recall, test_recall = [], []
+train_f1, test_f1 = [], []
+train_roc_auc_scores, test_roc_auc_scores = [], []
+
+# Evaluate a gradient boosting for each combination of n_estimators and max_depth
+for i in maxdepth_values:
+        # Configure the model
+        model = GradientBoostingClassifier(n_estimators=50, max_depth=i)
+        
+        # Fit model on the training dataset
+        model.fit(X_train, y_train)
+        
+        # Predictions
+        train_yhat = model.predict(X_train)
+        test_yhat = model.predict(X_test)
+        
+        # Accuracy
+        train_acc = accuracy_score(y_train, train_yhat)
+        test_acc = accuracy_score(y_test, test_yhat)
+        
+        # Precision
+        train_prec = precision_score(y_train, train_yhat)
+        test_prec = precision_score(y_test, test_yhat)
+        
+        # Recall
+        train_rec = recall_score(y_train, train_yhat)
+        test_rec = recall_score(y_test, test_yhat)
+        
+        # F1 Score
+        train_f1score = f1_score(y_train, train_yhat)
+        test_f1score = f1_score(y_test, test_yhat)
+        
+        # ROC AUC Score
+        train_roc_auc = roc_auc_score(y_train, train_yhat)
+        test_roc_auc = roc_auc_score(y_test, test_yhat)
+        
+        # Append scores to respective lists
+        train_scores.append(train_acc)
+        test_scores.append(test_acc)
+        train_precision.append(train_prec)
+        test_precision.append(test_prec)
+        train_recall.append(train_rec)
+        test_recall.append(test_rec)
+        train_f1.append(train_f1score)
+        test_f1.append(test_f1score)
+        train_roc_auc_scores.append(train_roc_auc)
+        test_roc_auc_scores.append(test_roc_auc)
+
+        # Summarize progress
+        print('>%d, train_acc: %.3f, test_acc: %.3f, train_prec: %.3f, test_prec: %.3f, train_rec: %.3f, test_rec: %.3f, train_f1: %.3f, test_f1: %.3f, train_roc_auc: %.3f, test_roc_auc: %.3f' % (i, train_acc, test_acc, train_prec, test_prec, train_rec, test_rec, train_f1score, test_f1score, train_roc_auc, test_roc_auc))
+
+# Plot of train and test scores vs tree depth
+plt.figure(figsize=(12, 8))
+
+plt.subplot(2, 3, 1)
+plt.plot(maxdepth_values, train_scores, '-o', label='Train')
+plt.plot(maxdepth_values, test_scores, '-o', label='Test')
+plt.xlabel('Max Depth')
+plt.ylabel('Accuracy')
+plt.title('Gradient Boosting (50) Accuracy')
+plt.legend()
+plt.grid(True)
+
+plt.subplot(2, 3, 2)
+plt.plot(maxdepth_values, train_precision, '-o', label='Train')
+plt.plot(maxdepth_values, test_precision, '-o', label='Test')
+plt.xlabel('Max Depth')
+plt.ylabel('Precision')
+plt.title('Gradient Boosting (50) Precision')
+plt.legend()
+plt.grid(True)
+
+plt.subplot(2, 3, 3)
+plt.plot(maxdepth_values, train_recall, '-o', label='Train')
+plt.plot(maxdepth_values, test_recall, '-o', label='Test')
+plt.xlabel('Max Depth')
+plt.ylabel('Recall')
+plt.title('Gradient Boosting (50) Recall')
+plt.legend()
+plt.grid(True)
+
+plt.subplot(2, 3, 4)
+plt.plot(maxdepth_values, train_f1, '-o', label='Train')
+plt.plot(maxdepth_values, test_f1, '-o', label='Test')
+plt.xlabel('Max Depth')
+plt.ylabel('F1 Score')
+plt.title('Gradient Boosting (50) F1 Score')
+plt.legend()
+plt.grid(True)
+
+plt.subplot(2, 3, 5)
+plt.plot(maxdepth_values, train_roc_auc_scores, '-o', label='Train')
+plt.plot(maxdepth_values, test_roc_auc_scores, '-o', label='Test')
+plt.xlabel('Max Depth')
+plt.ylabel('ROC AUC Score')
+plt.title('Gradient Boosting (50) ROC AUC Score')
+plt.legend()
+plt.grid(True)
+
+plt.tight_layout()
+plt.savefig('gb_original50_hp.png') # Save the plot as a photo
+
+# Save results as a CSV file
+results_df = pd.DataFrame({
+    'Max Depth': maxdepth_values,
+    'Train Accuracy': train_scores,
+    'Test Accuracy': test_scores,
+    'Train Precision': train_precision,
+    'Test Precision': test_precision,
+    'Train Recall': train_recall,
+    'Test Recall': test_recall,
+    'Train F1': train_f1,
+    'Test F1': test_f1,
+    'Train ROC AUC': train_roc_auc_scores,
+    'Test ROC AUC': test_roc_auc_scores
+})
+
+results_df.to_csv('gb_original50_hp.csv', index=False)  # Save the DataFrame as a CSV file
+```
+
+```{python}
+#| label: find the best max depth for GB (all variable) with n_estimators 100
+#| echo: false
+#| message: true
+#| include: false
+#| eval: false 
+
+# Define the range of values for max_depth
+maxdepth_values = [i for i in range(1, 21)]
+
+# Define lists to collect scores
+train_scores, test_scores = [], []
+train_precision, test_precision = [], []
+train_recall, test_recall = [], []
+train_f1, test_f1 = [], []
+train_roc_auc_scores, test_roc_auc_scores = [], []
+
+# Evaluate a gradient boosting for each combination of n_estimators and max_depth
+for i in maxdepth_values:
+        # Configure the model
+        model = GradientBoostingClassifier(n_estimators=100, max_depth=i)
+        
+        # Fit model on the training dataset
+        model.fit(X_train, y_train)
+        
+        # Predictions
+        train_yhat = model.predict(X_train)
+        test_yhat = model.predict(X_test)
+        
+        # Accuracy
+        train_acc = accuracy_score(y_train, train_yhat)
+        test_acc = accuracy_score(y_test, test_yhat)
+        
+        # Precision
+        train_prec = precision_score(y_train, train_yhat)
+        test_prec = precision_score(y_test, test_yhat)
+        
+        # Recall
+        train_rec = recall_score(y_train, train_yhat)
+        test_rec = recall_score(y_test, test_yhat)
+        
+        # F1 Score
+        train_f1score = f1_score(y_train, train_yhat)
+        test_f1score = f1_score(y_test, test_yhat)
+        
+        # ROC AUC Score
+        train_roc_auc = roc_auc_score(y_train, train_yhat)
+        test_roc_auc = roc_auc_score(y_test, test_yhat)
+        
+        # Append scores to respective lists
+        train_scores.append(train_acc)
+        test_scores.append(test_acc)
+        train_precision.append(train_prec)
+        test_precision.append(test_prec)
+        train_recall.append(train_rec)
+        test_recall.append(test_rec)
+        train_f1.append(train_f1score)
+        test_f1.append(test_f1score)
+        train_roc_auc_scores.append(train_roc_auc)
+        test_roc_auc_scores.append(test_roc_auc)
+
+        # Summarize progress
+        print('>%d, train_acc: %.3f, test_acc: %.3f, train_prec: %.3f, test_prec: %.3f, train_rec: %.3f, test_rec: %.3f, train_f1: %.3f, test_f1: %.3f, train_roc_auc: %.3f, test_roc_auc: %.3f' % (i, train_acc, test_acc, train_prec, test_prec, train_rec, test_rec, train_f1score, test_f1score, train_roc_auc, test_roc_auc))
+# Plot of train and test scores vs tree depth
+plt.figure(figsize=(12, 8))
+
+plt.subplot(2, 3, 1)
+plt.plot(maxdepth_values, train_scores, '-o', label='Train')
+plt.plot(maxdepth_values, test_scores, '-o', label='Test')
+plt.xlabel('Max Depth')
+plt.ylabel('Accuracy')
+plt.title('Gradient Boosting (100) Accuracy')
+plt.legend()
+plt.grid(True)
+
+plt.subplot(2, 3, 2)
+plt.plot(maxdepth_values, train_precision, '-o', label='Train')
+plt.plot(maxdepth_values, test_precision, '-o', label='Test')
+plt.xlabel('Max Depth')
+plt.ylabel('Precision')
+plt.title('Gradient Boosting (100) Precision')
+plt.legend()
+plt.grid(True)
+
+plt.subplot(2, 3, 3)
+plt.plot(maxdepth_values, train_recall, '-o', label='Train')
+plt.plot(maxdepth_values, test_recall, '-o', label='Test')
+plt.xlabel('Max Depth')
+plt.ylabel('Recall')
+plt.title('Gradient Boosting (100) Recall')
+plt.legend()
+plt.grid(True)
+
+plt.subplot(2, 3, 4)
+plt.plot(maxdepth_values, train_f1, '-o', label='Train')
+plt.plot(maxdepth_values, test_f1, '-o', label='Test')
+plt.xlabel('Max Depth')
+plt.ylabel('F1 Score')
+plt.title('Gradient Boosting (100) F1 Score')
+plt.legend()
+plt.grid(True)
+
+plt.subplot(2, 3, 5)
+plt.plot(maxdepth_values, train_roc_auc_scores, '-o', label='Train')
+plt.plot(maxdepth_values, test_roc_auc_scores, '-o', label='Test')
+plt.xlabel('Max Depth')
+plt.ylabel('ROC AUC Score')
+plt.title('Gradient Boosting (100) ROC AUC Score')
+plt.legend()
+plt.grid(True)
+
+plt.tight_layout()
+plt.savefig('gb_original100_hp.png')  # Save the plot as a photo
+
+# Save results as a CSV file
+results_df = pd.DataFrame({
+    'Max Depth': maxdepth_values,
+    'Train Accuracy': train_scores,
+    'Test Accuracy': test_scores,
+    'Train Precision': train_precision,
+    'Test Precision': test_precision,
+    'Train Recall': train_recall,
+    'Test Recall': test_recall,
+    'Train F1': train_f1,
+    'Test F1': test_f1,
+    'Train ROC AUC': train_roc_auc_scores,
+    'Test ROC AUC': test_roc_auc_scores
+})
+
+results_df.to_csv('gb_original100_hp.csv', index=False)  # Save the DataFrame as a CSV file
+```
+
+```{python}
+#| label: find the best max depth for GB (all variable) with n_estimators 150
+#| echo: false
+#| message: true
+#| include: false
+#| eval: false 
+
+# Define the range of values for max_depth
+maxdepth_values = [i for i in range(1, 21)]
+
+# Define lists to collect scores
+train_scores, test_scores = [], []
+train_precision, test_precision = [], []
+train_recall, test_recall = [], []
+train_f1, test_f1 = [], []
+train_roc_auc_scores, test_roc_auc_scores = [], []
+
+# Evaluate a gradient boosting for each combination of n_estimators and max_depth
+for i in maxdepth_values:
+        # Configure the model
+        model = GradientBoostingClassifier(n_estimators=150, max_depth=i)
+        
+        # Fit model on the training dataset
+        model.fit(X_train, y_train)
+        
+        # Predictions
+        train_yhat = model.predict(X_train)
+        test_yhat = model.predict(X_test)
+        
+        # Accuracy
+        train_acc = accuracy_score(y_train, train_yhat)
+        test_acc = accuracy_score(y_test, test_yhat)
+        
+        # Precision
+        train_prec = precision_score(y_train, train_yhat)
+        test_prec = precision_score(y_test, test_yhat)
+        
+        # Recall
+        train_rec = recall_score(y_train, train_yhat)
+        test_rec = recall_score(y_test, test_yhat)
+        
+        # F1 Score
+        train_f1score = f1_score(y_train, train_yhat)
+        test_f1score = f1_score(y_test, test_yhat)
+        
+        # ROC AUC Score
+        train_roc_auc = roc_auc_score(y_train, train_yhat)
+        test_roc_auc = roc_auc_score(y_test, test_yhat)
+        
+        # Append scores to respective lists
+        train_scores.append(train_acc)
+        test_scores.append(test_acc)
+        train_precision.append(train_prec)
+        test_precision.append(test_prec)
+        train_recall.append(train_rec)
+        test_recall.append(test_rec)
+        train_f1.append(train_f1score)
+        test_f1.append(test_f1score)
+        train_roc_auc_scores.append(train_roc_auc)
+        test_roc_auc_scores.append(test_roc_auc)
+
+        # Summarize progress
+        print('>%d, train_acc: %.3f, test_acc: %.3f, train_prec: %.3f, test_prec: %.3f, train_rec: %.3f, test_rec: %.3f, train_f1: %.3f, test_f1: %.3f, train_roc_auc: %.3f, test_roc_auc: %.3f' % (i, train_acc, test_acc, train_prec, test_prec, train_rec, test_rec, train_f1score, test_f1score, train_roc_auc, test_roc_auc))
+
+# Plot of train and test scores vs tree depth
+plt.figure(figsize=(12, 8))
+
+plt.subplot(2, 3, 1)
+plt.plot(maxdepth_values, train_scores, '-o', label='Train')
+plt.plot(maxdepth_values, test_scores, '-o', label='Test')
+plt.xlabel('Max Depth')
+plt.ylabel('Accuracy')
+plt.title('Gradient Boosting (150) Accuracy')
+plt.legend()
+plt.grid(True)
+
+plt.subplot(2, 3, 2)
+plt.plot(maxdepth_values, train_precision, '-o', label='Train')
+plt.plot(maxdepth_values, test_precision, '-o', label='Test')
+plt.xlabel('Max Depth')
+plt.ylabel('Precision')
+plt.title('Gradient Boosting (150) Precision')
+plt.legend()
+plt.grid(True)
+
+plt.subplot(2, 3, 3)
+plt.plot(maxdepth_values, train_recall, '-o', label='Train')
+plt.plot(maxdepth_values, test_recall, '-o', label='Test')
+plt.xlabel('Max Depth')
+plt.ylabel('Recall')
+plt.title('Gradient Boosting (150) Recall')
+plt.legend()
+plt.grid(True)
+
+plt.subplot(2, 3, 4)
+plt.plot(maxdepth_values, train_f1, '-o', label='Train')
+plt.plot(maxdepth_values, test_f1, '-o', label='Test')
+plt.xlabel('Max Depth')
+plt.ylabel('F1 Score')
+plt.title('Gradient Boosting (150) F1 Score')
+plt.legend()
+plt.grid(True)
+
+plt.subplot(2, 3, 5)
+plt.plot(maxdepth_values, train_roc_auc_scores, '-o', label='Train')
+plt.plot(maxdepth_values, test_roc_auc_scores, '-o', label='Test')
+plt.xlabel('Max Depth')
+plt.ylabel('ROC AUC Score')
+plt.title('Gradient Boosting (150) ROC AUC Score')
+plt.legend()
+plt.grid(True)
+
+plt.tight_layout()
+plt.savefig('gb_original150_hp.png')  # Save the plot as a photo
+
+# Save results as a CSV file
+results_df = pd.DataFrame({
+    'Max Depth': maxdepth_values,
+    'Train Accuracy': train_scores,
+    'Test Accuracy': test_scores,
+    'Train Precision': train_precision,
+    'Test Precision': test_precision,
+    'Train Recall': train_recall,
+    'Test Recall': test_recall,
+    'Train F1': train_f1,
+    'Test F1': test_f1,
+    'Train ROC AUC': train_roc_auc_scores,
+    'Test ROC AUC': test_roc_auc_scores
+})
+
+results_df.to_csv('gb_original150_hp.csv', index=False)  # Save the DataFrame as a CSV file
+```
+
+##### Gradient Boosting Classifier with 50 estimators
+
+<a id="C-figure-5"></a>
+
+![Cardio Figure 5a: Gradient Boosting Performance with 50 estimators and max depth from 1-20](photoDF/gb_original50_hp.png)
+
+##### Gradient Boosting Classifier with 100 estimators
+
+![Cardio Figure 5b: Gradient Boosting Performance with 100 estimators and max depth from 1-20](photoDF/gb_original100_hp.png)
+
+##### Gradient Boosting Classifier with 150 estimators
+
+![Cardio Figure 5c: Gradient Boosting Performance with 150 estimators and max depth from 1-20](photoDF/gb_original150_hp.png)
+
+
+In our investigation of various combinations of max depth and number of estimators for the Gradient Boosting Classifier, shown in [Cardio Figure 5a), 5b), and 5c)](#C-figure-5), we observed a consistent trend: increasing the max depth generally improved performance metrics on the training set, including accuracy, precision, recall, F1-score, and ROC AUC score. However, performance on the testing dataset exhibited fluctuations, with certain max depths performing better than others. These observations suggest a potential risk of overfitting.
+
+The optimal max depth tends to fall within the range of 10 to 12, striking a balance between model complexity and generalization ability across different configurations of n_estimators (50, 100, and 150). This range consistently delivers good performance on both the training and testing datasets while mitigating the risk of overfitting.
+
+Interestingly, the choice of n_estimators does not significantly alter the observed trends. Although higher values may offer slightly better performance, the overall behavior of the model, as reflected in the learning curves, remains consistent.
+
+#### Checking for Overfitting of Gradient Boosting with Resampling Data
+
+```{python}
+#| label: find the best max depth for GB (resampling) with n_estimators 50
+#| echo: false
+#| message: true
+#| include: false
+#| eval: false 
+
+# Define the tree depths to evaluate
+maxdepth_values = [i for i in range(1, 21)]
+
+# Define lists to collect scores
+train_scores, test_scores = [], []
+train_precision, test_precision = [], []
+train_recall, test_recall = [], []
+train_f1, test_f1 = [], []
+train_roc_auc_scores, test_roc_auc_scores = [], []
+
+# Evaluate a gradient boosting for each depth
+for i in maxdepth_values:
+    # Configure the model
+    model = GradientBoostingClassifier(n_estimators=50, max_depth=i)
+    
+    # Fit model on the training dataset
+    model.fit(X_train_us, y_train_us)
+    
+    # Predictions
+    train_yhat = model.predict(X_train_us)
+    test_yhat = model.predict(X_test_us)
+    
+    # Accuracy
+    train_acc = accuracy_score(y_train_us, train_yhat)
+    test_acc = accuracy_score(y_test_us, test_yhat)
+    
+    # Precision
+    train_prec = precision_score(y_train_us, train_yhat)
+    test_prec = precision_score(y_test_us, test_yhat)
+    
+    # Recall
+    train_rec = recall_score(y_train_us, train_yhat)
+    test_rec = recall_score(y_test_us, test_yhat)
+    
+    # F1 Score
+    train_f1score = f1_score(y_train_us, train_yhat)
+    test_f1score = f1_score(y_test_us, test_yhat)
+    
+    # ROC AUC Score
+    train_roc_auc = roc_auc_score(y_train_us, train_yhat)
+    test_roc_auc = roc_auc_score(y_test_us, test_yhat)
+    
+    # Append scores to respective lists
+    train_scores.append(train_acc)
+    test_scores.append(test_acc)
+    train_precision.append(train_prec)
+    test_precision.append(test_prec)
+    train_recall.append(train_rec)
+    test_recall.append(test_rec)
+    train_f1.append(train_f1score)
+    test_f1.append(test_f1score)
+    train_roc_auc_scores.append(train_roc_auc)
+    test_roc_auc_scores.append(test_roc_auc)
+
+    # Summarize progress
+    print('>%d, train_acc: %.3f, test_acc: %.3f, train_prec: %.3f, test_prec: %.3f, train_rec: %.3f, test_rec: %.3f, train_f1: %.3f, test_f1: %.3f, train_roc_auc: %.3f, test_roc_auc: %.3f' % (i, train_acc, test_acc, train_prec, test_prec, train_rec, test_rec, train_f1score, test_f1score, train_roc_auc, test_roc_auc))
+
+# Plot of train and test scores vs tree depth
+plt.figure(figsize=(12, 8))
+
+plt.subplot(2, 3, 1)
+plt.plot(maxdepth_values, train_scores, '-o', label='Train')
+plt.plot(maxdepth_values, test_scores, '-o', label='Test')
+plt.xlabel('Max Depth')
+plt.ylabel('Accuracy')
+plt.title('GB (Resampling - 50) Accuracy')
+plt.legend()
+plt.grid(True)
+
+plt.subplot(2, 3, 2)
+plt.plot(maxdepth_values, train_precision, '-o', label='Train')
+plt.plot(maxdepth_values, test_precision, '-o', label='Test')
+plt.xlabel('Max Depth')
+plt.ylabel('Precision')
+plt.title('GB(Resampling - 50) Precision')
+plt.legend()
+plt.grid(True)
+
+plt.subplot(2, 3, 3)
+plt.plot(maxdepth_values, train_recall, '-o', label='Train')
+plt.plot(maxdepth_values, test_recall, '-o', label='Test')
+plt.xlabel('Max Depth')
+plt.ylabel('Recall')
+plt.title('GB (Resampling - 50) Recall')
+plt.legend()
+plt.grid(True)
+
+plt.subplot(2, 3, 4)
+plt.plot(maxdepth_values, train_f1, '-o', label='Train')
+plt.plot(maxdepth_values, test_f1, '-o', label='Test')
+plt.xlabel('Max Depth')
+plt.ylabel('F1 Score')
+plt.title('GB (Resampling - 50) F1 Score')
+plt.legend()
+plt.grid(True)
+
+plt.subplot(2, 3, 5)
+plt.plot(maxdepth_values, train_roc_auc_scores, '-o', label='Train')
+plt.plot(maxdepth_values, test_roc_auc_scores, '-o', label='Test')
+plt.xlabel('Max Depth')
+plt.ylabel('ROC AUC Score')
+plt.title('GB (Resampling - 50) ROC AUC Score')
+plt.legend()
+plt.grid(True)
+
+plt.tight_layout()
+plt.savefig('gb_resampling50_hp.png')  # Save the plot as a photo
+
+# Save results as a CSV file
+results_df = pd.DataFrame({
+    'Max Depth': maxdepth_values,
+    'Train Accuracy': train_scores,
+    'Test Accuracy': test_scores,
+    'Train Precision': train_precision,
+    'Test Precision': test_precision,
+    'Train Recall': train_recall,
+    'Test Recall': test_recall,
+    'Train F1': train_f1,
+    'Test F1': test_f1,
+    'Train ROC AUC': train_roc_auc_scores,
+    'Test ROC AUC': test_roc_auc_scores
+})
+
+results_df.to_csv('gb_resampling50_hp.csv', index=False)  # Save the DataFrame as a CSV file
+```
+
+```{python}
+#| label: find the best max depth for GB (resampling) with n_estimators 100
+#| echo: false
+#| message: true
+#| include: false
+#| eval: false 
+
+# Define the tree depths to evaluate
+maxdepth_values = [i for i in range(1, 21)]
+
+# Define lists to collect scores
+train_scores, test_scores = [], []
+train_precision, test_precision = [], []
+train_recall, test_recall = [], []
+train_f1, test_f1 = [], []
+train_roc_auc_scores, test_roc_auc_scores = [], []
+
+# Evaluate a gradient boosting for each depth
+for i in maxdepth_values:
+    # Configure the model
+    model = GradientBoostingClassifier(n_estimators=100, max_depth=i)
+    
+    # Fit model on the training dataset
+    model.fit(X_train_us, y_train_us)
+    
+    # Predictions
+    train_yhat = model.predict(X_train_us)
+    test_yhat = model.predict(X_test_us)
+    
+    # Accuracy
+    train_acc = accuracy_score(y_train_us, train_yhat)
+    test_acc = accuracy_score(y_test_us, test_yhat)
+    
+    # Precision
+    train_prec = precision_score(y_train_us, train_yhat)
+    test_prec = precision_score(y_test_us, test_yhat)
+    
+    # Recall
+    train_rec = recall_score(y_train_us, train_yhat)
+    test_rec = recall_score(y_test_us, test_yhat)
+    
+    # F1 Score
+    train_f1score = f1_score(y_train_us, train_yhat)
+    test_f1score = f1_score(y_test_us, test_yhat)
+    
+    # ROC AUC Score
+    train_roc_auc = roc_auc_score(y_train_us, train_yhat)
+    test_roc_auc = roc_auc_score(y_test_us, test_yhat)
+    
+    # Append scores to respective lists
+    train_scores.append(train_acc)
+    test_scores.append(test_acc)
+    train_precision.append(train_prec)
+    test_precision.append(test_prec)
+    train_recall.append(train_rec)
+    test_recall.append(test_rec)
+    train_f1.append(train_f1score)
+    test_f1.append(test_f1score)
+    train_roc_auc_scores.append(train_roc_auc)
+    test_roc_auc_scores.append(test_roc_auc)
+
+    # Summarize progress
+    print('>%d, train_acc: %.3f, test_acc: %.3f, train_prec: %.3f, test_prec: %.3f, train_rec: %.3f, test_rec: %.3f, train_f1: %.3f, test_f1: %.3f, train_roc_auc: %.3f, test_roc_auc: %.3f' % (i, train_acc, test_acc, train_prec, test_prec, train_rec, test_rec, train_f1score, test_f1score, train_roc_auc, test_roc_auc))
+
+# Plot of train and test scores vs tree depth
+plt.figure(figsize=(12, 8))
+
+plt.subplot(2, 3, 1)
+plt.plot(maxdepth_values, train_scores, '-o', label='Train')
+plt.plot(maxdepth_values, test_scores, '-o', label='Test')
+plt.xlabel('Max Depth')
+plt.ylabel('Accuracy')
+plt.title('GB (Resampling - 100) Accuracy')
+plt.legend()
+plt.grid(True)
+
+plt.subplot(2, 3, 2)
+plt.plot(maxdepth_values, train_precision, '-o', label='Train')
+plt.plot(maxdepth_values, test_precision, '-o', label='Test')
+plt.xlabel('Max Depth')
+plt.ylabel('Precision')
+plt.title('GB (Resampling - 100) Precision')
+plt.legend()
+plt.grid(True)
+
+plt.subplot(2, 3, 3)
+plt.plot(maxdepth_values, train_recall, '-o', label='Train')
+plt.plot(maxdepth_values, test_recall, '-o', label='Test')
+plt.xlabel('Max Depth')
+plt.ylabel('Recall')
+plt.title('GB (Resampling - 100) Recall')
+plt.legend()
+plt.grid(True)
+
+plt.subplot(2, 3, 4)
+plt.plot(maxdepth_values, train_f1, '-o', label='Train')
+plt.plot(maxdepth_values, test_f1, '-o', label='Test')
+plt.xlabel('Max Depth')
+plt.ylabel('F1 Score')
+plt.title('GB (Resampling - 100) F1 Score')
+plt.legend()
+plt.grid(True)
+
+plt.subplot(2, 3, 5)
+plt.plot(maxdepth_values, train_roc_auc_scores, '-o', label='Train')
+plt.plot(maxdepth_values, test_roc_auc_scores, '-o', label='Test')
+plt.xlabel('Max Depth')
+plt.ylabel('ROC AUC Score')
+plt.title('GB (Resampling - 100) ROC AUC Score')
+plt.legend()
+plt.grid(True)
+
+plt.tight_layout()
+plt.savefig('gb_resampling100_hp.png')  # Save the plot as a photo
+
+# Save results as a CSV file
+results_df = pd.DataFrame({
+    'Max Depth': maxdepth_values,
+    'Train Accuracy': train_scores,
+    'Test Accuracy': test_scores,
+    'Train Precision': train_precision,
+    'Test Precision': test_precision,
+    'Train Recall': train_recall,
+    'Test Recall': test_recall,
+    'Train F1': train_f1,
+    'Test F1': test_f1,
+    'Train ROC AUC': train_roc_auc_scores,
+    'Test ROC AUC': test_roc_auc_scores
+})
+
+results_df.to_csv('gb_resampling100_hp.csv', index=False)  # Save the DataFrame as a CSV file
+```
+
+```{python}
+#| label: find the best max depth for GB (resampling) with n_estimators 150
+#| echo: false
+#| message: true
+#| include: false
+#| eval: false 
+
+# Define the tree depths to evaluate
+maxdepth_values = [i for i in range(1, 21)]
+
+# Define lists to collect scores
+train_scores, test_scores = [], []
+train_precision, test_precision = [], []
+train_recall, test_recall = [], []
+train_f1, test_f1 = [], []
+train_roc_auc_scores, test_roc_auc_scores = [], []
+
+# Evaluate a gradient boosting for each depth
+for i in maxdepth_values:
+    # Configure the model
+    model = GradientBoostingClassifier(n_estimators=150, max_depth=i)
+    
+    # Fit model on the training dataset
+    model.fit(X_train_us, y_train_us)
+    
+    # Predictions
+    train_yhat = model.predict(X_train_us)
+    test_yhat = model.predict(X_test_us)
+    
+    # Accuracy
+    train_acc = accuracy_score(y_train_us, train_yhat)
+    test_acc = accuracy_score(y_test_us, test_yhat)
+    
+    # Precision
+    train_prec = precision_score(y_train_us, train_yhat)
+    test_prec = precision_score(y_test_us, test_yhat)
+    
+    # Recall
+    train_rec = recall_score(y_train_us, train_yhat)
+    test_rec = recall_score(y_test_us, test_yhat)
+    
+    # F1 Score
+    train_f1score = f1_score(y_train_us, train_yhat)
+    test_f1score = f1_score(y_test_us, test_yhat)
+    
+    # ROC AUC Score
+    train_roc_auc = roc_auc_score(y_train_us, train_yhat)
+    test_roc_auc = roc_auc_score(y_test_us, test_yhat)
+    
+    # Append scores to respective lists
+    train_scores.append(train_acc)
+    test_scores.append(test_acc)
+    train_precision.append(train_prec)
+    test_precision.append(test_prec)
+    train_recall.append(train_rec)
+    test_recall.append(test_rec)
+    train_f1.append(train_f1score)
+    test_f1.append(test_f1score)
+    train_roc_auc_scores.append(train_roc_auc)
+    test_roc_auc_scores.append(test_roc_auc)
+
+    # Summarize progress
+    print('>%d, train_acc: %.3f, test_acc: %.3f, train_prec: %.3f, test_prec: %.3f, train_rec: %.3f, test_rec: %.3f, train_f1: %.3f, test_f1: %.3f, train_roc_auc: %.3f, test_roc_auc: %.3f' % (i, train_acc, test_acc, train_prec, test_prec, train_rec, test_rec, train_f1score, test_f1score, train_roc_auc, test_roc_auc))
+
+# Plot of train and test scores vs tree depth
+plt.figure(figsize=(12, 8))
+
+plt.subplot(2, 3, 1)
+plt.plot(maxdepth_values, train_scores, '-o', label='Train')
+plt.plot(maxdepth_values, test_scores, '-o', label='Test')
+plt.xlabel('Max Depth')
+plt.ylabel('Accuracy')
+plt.title('GB (Resampling - 150) Accuracy')
+plt.legend()
+plt.grid(True)
+
+plt.subplot(2, 3, 2)
+plt.plot(maxdepth_values, train_precision, '-o', label='Train')
+plt.plot(maxdepth_values, test_precision, '-o', label='Test')
+plt.xlabel('Max Depth')
+plt.ylabel('Precision')
+plt.title('GB (Resampling - 150) Precision')
+plt.legend()
+plt.grid(True)
+
+plt.subplot(2, 3, 3)
+plt.plot(maxdepth_values, train_recall, '-o', label='Train')
+plt.plot(maxdepth_values, test_recall, '-o', label='Test')
+plt.xlabel('Max Depth')
+plt.ylabel('Recall')
+plt.title('GB (Resampling - 150) Recall')
+plt.legend()
+plt.grid(True)
+
+plt.subplot(2, 3, 4)
+plt.plot(maxdepth_values, train_f1, '-o', label='Train')
+plt.plot(maxdepth_values, test_f1, '-o', label='Test')
+plt.xlabel('Max Depth')
+plt.ylabel('F1 Score')
+plt.title('GB (Resampling - 150) F1 Score')
+plt.legend()
+plt.grid(True)
+
+plt.subplot(2, 3, 5)
+plt.plot(maxdepth_values, train_roc_auc_scores, '-o', label='Train')
+plt.plot(maxdepth_values, test_roc_auc_scores, '-o', label='Test')
+plt.xlabel('Max Depth')
+plt.ylabel('ROC AUC Score')
+plt.title('GB (Resampling - 150) ROC AUC Score')
+plt.legend()
+plt.grid(True)
+
+plt.tight_layout()
+plt.savefig('gb_resampling150_hp.png')  # Save the plot as a photo
+
+# Save results as a CSV file
+results_df = pd.DataFrame({
+    'Max Depth': maxdepth_values,
+    'Train Accuracy': train_scores,
+    'Test Accuracy': test_scores,
+    'Train Precision': train_precision,
+    'Test Precision': test_precision,
+    'Train Recall': train_recall,
+    'Test Recall': test_recall,
+    'Train F1': train_f1,
+    'Test F1': test_f1,
+    'Train ROC AUC': train_roc_auc_scores,
+    'Test ROC AUC': test_roc_auc_scores
+})
+
+results_df.to_csv('gb_resampling150_hp.csv', index=False)  # Save the DataFrame as a CSV file
+```
+
+##### Gradient Boosting Classifier (Resampling) with 50 estimators
+
+<a id="C-figure-6"></a>
+
+![Cardio Figure 6a: Gradient Boosting (Resampling) Performance with 50 estimators and max depth from 1-20](photoDF/gb_resampling50_hp.png)
+
+##### Gradient Boosting Classifier (Resampling) with 100 estimators
+
+![Cardio Figure 6b: Gradient Boosting (Resampling) Performance with 100 estimators and max depth from 1-20](photoDF/gb_resampling100_hp.png)
+
+##### Gradient Boosting Classifier (Resampling) with 150 estimators
+
+![Cardio Figure 6c: Gradient Boosting (Resampling) Performance with 150 estimators and max depth from 1-20](photoDF/gb_resampling150_hp.png)
+
+In our investigation of various combinations of max depth and number of estimators for the Gradient Boosting Classifier with Resampling, shown in [Cardio Figure 6a), 6b), and 6c)](#C-figure-6), we observed that increasing the max depth generally improves performance on the training set but may lead to overfitting on the testing set. The optimal max depth appears to be around 12, where a good balance between model complexity and generalization is achieved across different configurations of n_estimators.
+
+
+# References
+
+3.2.4.3.5. sklearn.ensemble.GradientBoostingClassifier — scikit-learn 0.20.3 documentation. (2009). Scikit-Learn.org. [https://scikit-learn.org/stable/modules/generated/sklearn.ensemble.GradientBoostingClassifier.html](https://scikit-learn.org/stable/modules/generated/sklearn.ensemble.GradientBoostingClassifier.html){style="color: darkgray;"}
+
+Alves, L. M. (2021, July 2). KNN (K Nearest Neighbors) and KNeighborsClassifier — What it is, how it works, and a practical…[https://luis-miguel-code.medium.com/knn-k-nearest-neighbors-and-kneighborsclassifier-what-it-is-how-it-works-and-a-practical-914ec089e467](https://luis-miguel-code.medium.com/knn-k-nearest-neighbors-and-kneighborsclassifier-what-it-is-how-it-works-and-a-practical-914ec089e467){style="color: darkgray;"}
+
+Giola, C., Danti, P., & Magnani, S. (2021, July 13). Learning curves: A novel approach for robustness improvement of load forecasting. *MDPI.* [https://www.mdpi.com/2673-4591/5/1/38#metrics](https://www.mdpi.com/2673-4591/5/1/38#metrics ){style="color: darkgray;"}
+
+IBM. (2022). What Is Logistic Regression? IBM.[https://www.ibm.com/topics/logistic-regression](https://www.ibm.com/topics/logistic-regression){style="color: darkgray;"}
+
+IBM. (2023a). What is a Decision Tree | IBM.[https://www.ibm.com/topics/decision-trees](https://www.ibm.com/topics/decision-trees){style="color: darkgray;"}
+
+IBM. (2023b). What is Random Forest? | IBM.[https://www.ibm.com/topics/random-forest](https://www.ibm.com/topics/random-forest){style="color: darkgray;"}
+
+Jason Brownlee. (2018, November 20). A Gentle Introduction to the Gradient Boosting Algorithm for Machine Learning. Machine Learning Mastery.[https://machinelearningmastery.com/gentle-introduction-gradient-boosting-algorithm-machine-learning/](https://machinelearningmastery.com/gentle-introduction-gradient-boosting-algorithm-machine-learning/){style="color: darkgray;"}
+
+Nair, R., & Bhagat, A. (2019, April 6). Feature Selection Method To Improve The Accuracy of Classification Algorithm. *International Journal of Soft Computing and Engineering.* [https://www.ijitee.org/wp-content/uploads/papers/v8i6/F3421048619.pdf](https://www.ijitee.org/wp-content/uploads/papers/v8i6/F3421048619.pdf){style="color: darkgray;"}
+
+Snieder, E., Abogadil, K., & T. Khan, U. (2020). Resampling and ensemble techniques for improving ANN-based high flow forecast accuracy. *Department of Civil Engineering, York University.* [https://hess.copernicus.org/preprints/hess-2020-430/hess-2020-430-manuscript-version4.pdf](https://hess.copernicus.org/preprints/hess-2020-430/hess-2020-430-manuscript-version4.pdf){style="color: darkgray;"}
+
+Scikit-learn. (2018). sklearn.ensemble.RandomForestClassifier — scikit-learn 0.20.3 documentation. Scikit-Learn.org. [https://scikit-learn.org/stable/modules/generated/sklearn.ensemble.RandomForestClassifier.html](https://scikit-learn.org/stable/modules/generated/sklearn.ensemble.RandomForestClassifier.html){style="color: darkgray;"}
+
+Wizards, D. S. (2023, July 7). Understanding the AdaBoost Algorithm. Medium.[https://medium.com/@datasciencewizards/understanding-the-adaboost-algorithm-2e9344d83d9b](https://medium.com/@datasciencewizards/understanding-the-adaboost-algorithm-2e9344d83d9b){style="color: darkgray;"}
+
+Yanminsun, S., Hu, H., Xue, B., Zhang, M., & Zhang, C. (2011). Optimized feature selection and enhanced collaborative representation for hyperspectral image classification. IEEE Transactions on Geoscience and Remote Sensing, 50(11), 4300-4312.[https://www.researchgate.net/publication/263913891_Classification_of_imbalanced_data_a_review](https://www.researchgate.net/publication/263913891_Classification_of_imbalanced_data_a_review){style="color: darkgray;"}
+
+Muralidhar, K. S. V. (2023, July 7). Learning Curve to identify Overfitting and Underfitting in Machine Learning. Medium. [https://towardsdatascience.com/learning-curve-to-identify-overfitting-underfitting-problems-133177f38df5#:~:text=Learning%20curve%20of%20an%20overfit%20model%20has%20a%20very%20low](https://towardsdatascience.com/learning-curve-to-identify-overfitting-underfitting-problems-133177f38df5#:~:text=Learning%20curve%20of%20an%20overfit%20model%20has%20a%20very%20low){style="color: darkgray;"}
+
+Programmer, P. (2023, May 17). Evaluation Metrics for Classification. Medium. [https://medium.com/@impythonprogrammer/evaluation-metrics-for-classification-fc770511052d](https://medium.com/@impythonprogrammer/evaluation-metrics-for-classification-fc770511052d){style="color: darkgray;"}
+
+What is Overfitting? - Overfitting in Machine Learning Explained - AWS. (n.d.). Amazon Web Services, Inc. Retrieved May 31, 2024, from [https://aws.amazon.com/what-is/overfitting/#:~:text=Underfitting%20vs](https://aws.amazon.com/what-is/overfitting/#:~:text=Underfitting%20vs){style="color: darkgray;"}
+
+The links for the three datasets are listed below, as hyperlinks:
+
+ - [Hotel Reservation Dataset](https://www.kaggle.com/datasets/ahsan81/hotel-reservations-classification-dataset){style="color: darkgray;"}
+ - [Weather in Australia Dataset](https://www.kaggle.com/datasets/jsphyg/weather-dataset-rattle-package){style="color: darkgray;"}
+ - [Cardiovascular Dataset](https://www.kaggle.com/datasets/alphiree/cardiovascular-diseases-risk-prediction-dataset){style="color: darkgray;"}
+
+
+
