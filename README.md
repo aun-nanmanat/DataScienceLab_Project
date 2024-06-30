@@ -2,7 +2,7 @@
 ## Objective: 
 Evaluated the performance of various supervised learning algorithms in predicting binary target variables and addressed overfitting issues across three diverse datasets from Kaggle.
 
-## Datasets & Domains:
+## Domains & Datasets:
 - Health: Cardiovascular Dataset
 
 - Environment: Weather in Australia
