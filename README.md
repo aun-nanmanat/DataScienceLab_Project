@@ -1,4 +1,4 @@
-# Data Science Lab Project: Multi-Domain Supervised Learning Analysis: Health, Environment, and Business
+# Data Science Lab Project: Performance of Predictive Models (Supervised Learning Analysis) - The Interpretability and Explainability Across Multi-Domains: Health, Environment, and Business (Classification Problems)
 ## Objective: 
 Evaluated the performance of various supervised learning algorithms in predicting binary target variables and addressed overfitting issues across three diverse datasets from Kaggle.
 
